@@ -21,7 +21,13 @@ namespace ELMS.Forms
             this.pnlSidebar = new System.Windows.Forms.Panel();
             this.pnlSidebarNav = new System.Windows.Forms.Panel();
             this.btnNavRoles = new System.Windows.Forms.Button();
+            this.btnNavApprovals = new System.Windows.Forms.Button();
             this.btnNavClearances = new System.Windows.Forms.Button();
+            this.btnNavConfigurations = new System.Windows.Forms.Button();
+            this.pnlConfigSubNav = new System.Windows.Forms.Panel();
+            this.btnConfigTabClearance = new System.Windows.Forms.Button();
+            this.btnConfigTabLeave = new System.Windows.Forms.Button();
+            this.btnConfigTabApproval = new System.Windows.Forms.Button();
             this.btnNavDepartments = new System.Windows.Forms.Button();
             this.btnNavLedger = new System.Windows.Forms.Button();
             this.btnNavEmployees = new System.Windows.Forms.Button();
@@ -109,6 +115,18 @@ namespace ELMS.Forms
             this.cboFilter2 = new System.Windows.Forms.ComboBox();
             this.cboFilter1 = new System.Windows.Forms.ComboBox();
             this.txtSearch = new System.Windows.Forms.TextBox();
+            this.ucConfigurations = new ELMS.Forms.ConfigurationsView();
+            this.cboFilter3 = new System.Windows.Forms.ComboBox();
+            this.btnSecondaryAction = new System.Windows.Forms.Button();
+            this.pnlReportMetrics = new System.Windows.Forms.Panel();
+            this.btnToggleSelectAll = new System.Windows.Forms.Button();
+            this.lblReportSelectedCount = new System.Windows.Forms.Label();
+            this.pnlKpiSummaryBadges = new System.Windows.Forms.Panel();
+            this.lblReportKpiStaff = new System.Windows.Forms.Label();
+            this.lblReportKpiAllocated = new System.Windows.Forms.Label();
+            this.lblReportKpiUsed = new System.Windows.Forms.Label();
+            this.lblReportKpiBalance = new System.Windows.Forms.Label();
+            this.lblReportKpiUtil = new System.Windows.Forms.Label();
             this.pnlSidebar.SuspendLayout();
             this.pnlSidebarNav.SuspendLayout();
             this.pnlSidebarBottom.SuspendLayout();
@@ -157,7 +175,9 @@ namespace ELMS.Forms
             // pnlSidebarNav
             // 
             this.pnlSidebarNav.Controls.Add(this.btnNavLedger);
+            this.pnlSidebarNav.Controls.Add(this.btnNavConfigurations);
             this.pnlSidebarNav.Controls.Add(this.btnNavClearances);
+            this.pnlSidebarNav.Controls.Add(this.btnNavApprovals);
             this.pnlSidebarNav.Controls.Add(this.btnNavLeaves);
             this.pnlSidebarNav.Controls.Add(this.btnNavRoles);
             this.pnlSidebarNav.Controls.Add(this.btnNavDepartments);
@@ -199,7 +219,7 @@ namespace ELMS.Forms
             this.btnNavLedger.Name = "btnNavLedger";
             this.btnNavLedger.Size = new System.Drawing.Size(210, 42);
             this.btnNavLedger.TabIndex = 4;
-            this.btnNavLedger.Text = "Quota Ledger";
+            this.btnNavLedger.Text = "Reports & Analytics";
             this.btnNavLedger.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNavLedger.UseVisualStyleBackColor = true;
             this.btnNavLedger.Click += new System.EventHandler(this.btnNavLedger_Click);
@@ -237,6 +257,40 @@ namespace ELMS.Forms
             this.btnNavEmployees.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNavEmployees.UseVisualStyleBackColor = true;
             this.btnNavEmployees.Click += new System.EventHandler(this.btnNavEmployees_Click);
+            // 
+            // btnNavConfigurations
+            // 
+            this.btnNavConfigurations.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnNavConfigurations.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnNavConfigurations.FlatAppearance.BorderSize = 0;
+            this.btnNavConfigurations.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNavConfigurations.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.btnNavConfigurations.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
+            this.btnNavConfigurations.Location = new System.Drawing.Point(10, 224);
+            this.btnNavConfigurations.Name = "btnNavConfigurations";
+            this.btnNavConfigurations.Size = new System.Drawing.Size(210, 42);
+            this.btnNavConfigurations.TabIndex = 6;
+            this.btnNavConfigurations.Text = "Configurations";
+            this.btnNavConfigurations.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnNavConfigurations.UseVisualStyleBackColor = true;
+            this.btnNavConfigurations.Click += new System.EventHandler(this.btnNavConfigurations_Click);
+            // 
+            // btnNavApprovals
+            // 
+            this.btnNavApprovals.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnNavApprovals.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnNavApprovals.FlatAppearance.BorderSize = 0;
+            this.btnNavApprovals.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNavApprovals.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.btnNavApprovals.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
+            this.btnNavApprovals.Location = new System.Drawing.Point(10, 140);
+            this.btnNavApprovals.Name = "btnNavApprovals";
+            this.btnNavApprovals.Size = new System.Drawing.Size(210, 42);
+            this.btnNavApprovals.TabIndex = 4;
+            this.btnNavApprovals.Text = "Approvals";
+            this.btnNavApprovals.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnNavApprovals.UseVisualStyleBackColor = true;
+            this.btnNavApprovals.Click += new System.EventHandler(this.btnNavApprovals_Click);
             // 
             // btnNavClearances
             // 
@@ -473,6 +527,7 @@ namespace ELMS.Forms
             // 
             this.pnlContentHost.Controls.Add(this.pnlDashboard);
             this.pnlContentHost.Controls.Add(this.pnlGridView);
+            this.pnlContentHost.Controls.Add(this.ucConfigurations);
             this.pnlContentHost.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlContentHost.Location = new System.Drawing.Point(0, 48);
             this.pnlContentHost.Name = "pnlContentHost";
@@ -774,7 +829,7 @@ namespace ELMS.Forms
             this.lblEmpKpi2Sub.Name = "lblEmpKpi2Sub";
             this.lblEmpKpi2Sub.Size = new System.Drawing.Size(107, 19);
             this.lblEmpKpi2Sub.TabIndex = 2;
-            this.lblEmpKpi2Sub.Text = "95% Active Rate";
+            this.lblEmpKpi2Sub.Text = "Active Personnel";
             // 
             // lblEmpKpi2Val
             // 
@@ -940,6 +995,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi4Sub.Size = new System.Drawing.Size(104, 19);
             this.lblLeaveKpi4Sub.TabIndex = 2;
             this.lblLeaveKpi4Sub.Text = "Currently Away";
+            this.lblLeaveKpi4Sub.Size = new System.Drawing.Size(188, 19);
+            this.lblLeaveKpi4Sub.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblLeaveKpi4Val
             // 
@@ -948,7 +1005,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi4Val.ForeColor = System.Drawing.Color.FromArgb(22, 163, 74);
             this.lblLeaveKpi4Val.Location = new System.Drawing.Point(14, 30);
             this.lblLeaveKpi4Val.Name = "lblLeaveKpi4Val";
-            this.lblLeaveKpi4Val.Size = new System.Drawing.Size(39, 46);
+            this.lblLeaveKpi4Val.Size = new System.Drawing.Size(188, 46);
+            this.lblLeaveKpi4Val.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblLeaveKpi4Val.TabIndex = 1;
             this.lblLeaveKpi4Val.Text = "0";
             // 
@@ -986,6 +1044,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi3Sub.Size = new System.Drawing.Size(117, 19);
             this.lblLeaveKpi3Sub.TabIndex = 2;
             this.lblLeaveKpi3Sub.Text = "Clearance Review";
+            this.lblLeaveKpi3Sub.Size = new System.Drawing.Size(188, 19);
+            this.lblLeaveKpi3Sub.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblLeaveKpi3Val
             // 
@@ -994,7 +1054,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi3Val.ForeColor = System.Drawing.Color.FromArgb(37, 99, 235);
             this.lblLeaveKpi3Val.Location = new System.Drawing.Point(14, 30);
             this.lblLeaveKpi3Val.Name = "lblLeaveKpi3Val";
-            this.lblLeaveKpi3Val.Size = new System.Drawing.Size(39, 46);
+            this.lblLeaveKpi3Val.Size = new System.Drawing.Size(188, 46);
+            this.lblLeaveKpi3Val.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblLeaveKpi3Val.TabIndex = 1;
             this.lblLeaveKpi3Val.Text = "0";
             // 
@@ -1008,6 +1069,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi3Title.Size = new System.Drawing.Size(107, 20);
             this.lblLeaveKpi3Title.TabIndex = 0;
             this.lblLeaveKpi3Title.Text = "IN CLEARANCE";
+            this.lblLeaveKpi3Title.Size = new System.Drawing.Size(188, 20);
+            this.lblLeaveKpi3Title.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // cardLeaveKpi2
             // 
@@ -1032,6 +1095,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi2Sub.Size = new System.Drawing.Size(117, 19);
             this.lblLeaveKpi2Sub.TabIndex = 2;
             this.lblLeaveKpi2Sub.Text = "Awaiting Decision";
+            this.lblLeaveKpi2Sub.Size = new System.Drawing.Size(188, 19);
+            this.lblLeaveKpi2Sub.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblLeaveKpi2Val
             // 
@@ -1040,7 +1105,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi2Val.ForeColor = System.Drawing.Color.FromArgb(234, 88, 12);
             this.lblLeaveKpi2Val.Location = new System.Drawing.Point(14, 30);
             this.lblLeaveKpi2Val.Name = "lblLeaveKpi2Val";
-            this.lblLeaveKpi2Val.Size = new System.Drawing.Size(39, 46);
+            this.lblLeaveKpi2Val.Size = new System.Drawing.Size(188, 46);
+            this.lblLeaveKpi2Val.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblLeaveKpi2Val.TabIndex = 1;
             this.lblLeaveKpi2Val.Text = "0";
             // 
@@ -1054,6 +1120,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi2Title.Size = new System.Drawing.Size(126, 20);
             this.lblLeaveKpi2Title.TabIndex = 0;
             this.lblLeaveKpi2Title.Text = "PENDING REVIEW";
+            this.lblLeaveKpi2Title.Size = new System.Drawing.Size(188, 20);
+            this.lblLeaveKpi2Title.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // cardLeaveKpi1
             // 
@@ -1078,6 +1146,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi1Sub.Size = new System.Drawing.Size(117, 19);
             this.lblLeaveKpi1Sub.TabIndex = 2;
             this.lblLeaveKpi1Sub.Text = "All Active Ledgers";
+            this.lblLeaveKpi1Sub.Size = new System.Drawing.Size(188, 19);
+            this.lblLeaveKpi1Sub.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblLeaveKpi1Val
             // 
@@ -1086,7 +1156,8 @@ namespace ELMS.Forms
             this.lblLeaveKpi1Val.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
             this.lblLeaveKpi1Val.Location = new System.Drawing.Point(14, 30);
             this.lblLeaveKpi1Val.Name = "lblLeaveKpi1Val";
-            this.lblLeaveKpi1Val.Size = new System.Drawing.Size(39, 46);
+            this.lblLeaveKpi1Val.Size = new System.Drawing.Size(188, 46);
+            this.lblLeaveKpi1Val.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblLeaveKpi1Val.TabIndex = 1;
             this.lblLeaveKpi1Val.Text = "0";
             // 
@@ -1100,11 +1171,15 @@ namespace ELMS.Forms
             this.lblLeaveKpi1Title.Size = new System.Drawing.Size(123, 20);
             this.lblLeaveKpi1Title.TabIndex = 0;
             this.lblLeaveKpi1Title.Text = "TOTAL REQUESTS";
+            this.lblLeaveKpi1Title.Size = new System.Drawing.Size(188, 20);
+            this.lblLeaveKpi1Title.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // pnlGridView
             // 
             this.pnlGridView.Controls.Add(this.dgvData);
+            this.pnlGridView.Controls.Add(this.pnlReportMetrics);
             this.pnlGridView.Controls.Add(this.pnlToolbar);
+            this.pnlGridView.Controls.Add(this.pnlConfigSubNav);
             this.pnlGridView.Controls.Add(this.pnlLeaveSubNav);
             this.pnlGridView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlGridView.Location = new System.Drawing.Point(20, 20);
@@ -1128,6 +1203,65 @@ namespace ELMS.Forms
             this.dgvData.TabIndex = 1;
             this.dgvData.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvData_CellContentClick);
             this.dgvData.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvData_CellFormatting);
+            // 
+            // pnlConfigSubNav
+            // 
+            this.pnlConfigSubNav.BackColor = System.Drawing.Color.White;
+            this.pnlConfigSubNav.Controls.Add(this.btnConfigTabApproval);
+            this.pnlConfigSubNav.Controls.Add(this.btnConfigTabLeave);
+            this.pnlConfigSubNav.Controls.Add(this.btnConfigTabClearance);
+            this.pnlConfigSubNav.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlConfigSubNav.Location = new System.Drawing.Point(0, 0);
+            this.pnlConfigSubNav.Name = "pnlConfigSubNav";
+            this.pnlConfigSubNav.Size = new System.Drawing.Size(930, 44);
+            this.pnlConfigSubNav.TabIndex = 3;
+            this.pnlConfigSubNav.Visible = false;
+            this.pnlConfigSubNav.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlConfigSubNav_Paint);
+            // 
+            // btnConfigTabClearance
+            // 
+            this.btnConfigTabClearance.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnConfigTabClearance.FlatAppearance.BorderSize = 0;
+            this.btnConfigTabClearance.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnConfigTabClearance.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnConfigTabClearance.ForeColor = System.Drawing.Color.FromArgb(234, 88, 12);
+            this.btnConfigTabClearance.Location = new System.Drawing.Point(10, 4);
+            this.btnConfigTabClearance.Name = "btnConfigTabClearance";
+            this.btnConfigTabClearance.Size = new System.Drawing.Size(165, 34);
+            this.btnConfigTabClearance.TabIndex = 0;
+            this.btnConfigTabClearance.Text = "Clearance Policies";
+            this.btnConfigTabClearance.UseVisualStyleBackColor = true;
+            this.btnConfigTabClearance.Click += new System.EventHandler(this.btnConfigTabClearance_Click);
+            // 
+            // btnConfigTabLeave
+            // 
+            this.btnConfigTabLeave.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnConfigTabLeave.FlatAppearance.BorderSize = 0;
+            this.btnConfigTabLeave.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnConfigTabLeave.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.btnConfigTabLeave.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
+            this.btnConfigTabLeave.Location = new System.Drawing.Point(180, 4);
+            this.btnConfigTabLeave.Name = "btnConfigTabLeave";
+            this.btnConfigTabLeave.Size = new System.Drawing.Size(145, 34);
+            this.btnConfigTabLeave.TabIndex = 1;
+            this.btnConfigTabLeave.Text = "Leave Policies";
+            this.btnConfigTabLeave.UseVisualStyleBackColor = true;
+            this.btnConfigTabLeave.Click += new System.EventHandler(this.btnConfigTabLeave_Click);
+            // 
+            // btnConfigTabApproval
+            // 
+            this.btnConfigTabApproval.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnConfigTabApproval.FlatAppearance.BorderSize = 0;
+            this.btnConfigTabApproval.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnConfigTabApproval.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.btnConfigTabApproval.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
+            this.btnConfigTabApproval.Location = new System.Drawing.Point(330, 4);
+            this.btnConfigTabApproval.Name = "btnConfigTabApproval";
+            this.btnConfigTabApproval.Size = new System.Drawing.Size(165, 34);
+            this.btnConfigTabApproval.TabIndex = 2;
+            this.btnConfigTabApproval.Text = "Approval Workflows";
+            this.btnConfigTabApproval.UseVisualStyleBackColor = true;
+            this.btnConfigTabApproval.Click += new System.EventHandler(this.btnConfigTabApproval_Click);
             // 
             // pnlLeaveSubNav
             // 
@@ -1208,6 +1342,8 @@ namespace ELMS.Forms
             // 
             this.pnlToolbar.BackColor = System.Drawing.Color.White;
             this.pnlToolbar.Controls.Add(this.btnToolbarAction);
+            this.pnlToolbar.Controls.Add(this.btnSecondaryAction);
+            this.pnlToolbar.Controls.Add(this.cboFilter3);
             this.pnlToolbar.Controls.Add(this.cboFilter2);
             this.pnlToolbar.Controls.Add(this.cboFilter1);
             this.pnlToolbar.Controls.Add(this.txtSearch);
@@ -1227,22 +1363,52 @@ namespace ELMS.Forms
             this.btnToolbarAction.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnToolbarAction.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
             this.btnToolbarAction.ForeColor = System.Drawing.Color.White;
-            this.btnToolbarAction.Location = new System.Drawing.Point(760, 9);
+            this.btnToolbarAction.Location = new System.Drawing.Point(778, 9);
             this.btnToolbarAction.Name = "btnToolbarAction";
-            this.btnToolbarAction.Size = new System.Drawing.Size(155, 34);
-            this.btnToolbarAction.TabIndex = 3;
+            this.btnToolbarAction.Size = new System.Drawing.Size(140, 34);
+            this.btnToolbarAction.TabIndex = 5;
             this.btnToolbarAction.Text = "+ New Request";
             this.btnToolbarAction.UseVisualStyleBackColor = false;
             this.btnToolbarAction.Click += new System.EventHandler(this.btnToolbarAction_Click);
+            // 
+            // btnSecondaryAction
+            // 
+            this.btnSecondaryAction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSecondaryAction.BackColor = System.Drawing.Color.White;
+            this.btnSecondaryAction.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSecondaryAction.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(203, 213, 225);
+            this.btnSecondaryAction.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSecondaryAction.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnSecondaryAction.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
+            this.btnSecondaryAction.Location = new System.Drawing.Point(633, 9);
+            this.btnSecondaryAction.Name = "btnSecondaryAction";
+            this.btnSecondaryAction.Size = new System.Drawing.Size(135, 34);
+            this.btnSecondaryAction.TabIndex = 4;
+            this.btnSecondaryAction.Text = "📄 Export PDF";
+            this.btnSecondaryAction.UseVisualStyleBackColor = false;
+            this.btnSecondaryAction.Visible = false;
+            this.btnSecondaryAction.Click += new System.EventHandler(this.btnSecondaryAction_Click);
+            // 
+            // cboFilter3
+            // 
+            this.cboFilter3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboFilter3.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.cboFilter3.FormattingEnabled = true;
+            this.cboFilter3.Location = new System.Drawing.Point(476, 11);
+            this.cboFilter3.Name = "cboFilter3";
+            this.cboFilter3.Size = new System.Drawing.Size(145, 29);
+            this.cboFilter3.TabIndex = 3;
+            this.cboFilter3.Visible = false;
+            this.cboFilter3.SelectedIndexChanged += new System.EventHandler(this.FilterOrSearch_Changed);
             // 
             // cboFilter2
             // 
             this.cboFilter2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboFilter2.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.cboFilter2.FormattingEnabled = true;
-            this.cboFilter2.Location = new System.Drawing.Point(420, 11);
+            this.cboFilter2.Location = new System.Drawing.Point(348, 11);
             this.cboFilter2.Name = "cboFilter2";
-            this.cboFilter2.Size = new System.Drawing.Size(175, 29);
+            this.cboFilter2.Size = new System.Drawing.Size(120, 29);
             this.cboFilter2.TabIndex = 2;
             this.cboFilter2.SelectedIndexChanged += new System.EventHandler(this.FilterOrSearch_Changed);
             // 
@@ -1251,9 +1417,9 @@ namespace ELMS.Forms
             this.cboFilter1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboFilter1.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.cboFilter1.FormattingEnabled = true;
-            this.cboFilter1.Location = new System.Drawing.Point(238, 11);
+            this.cboFilter1.Location = new System.Drawing.Point(200, 11);
             this.cboFilter1.Name = "cboFilter1";
-            this.cboFilter1.Size = new System.Drawing.Size(175, 29);
+            this.cboFilter1.Size = new System.Drawing.Size(140, 29);
             this.cboFilter1.TabIndex = 1;
             this.cboFilter1.SelectedIndexChanged += new System.EventHandler(this.FilterOrSearch_Changed);
             // 
@@ -1263,9 +1429,119 @@ namespace ELMS.Forms
             this.txtSearch.Location = new System.Drawing.Point(12, 11);
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.PlaceholderText = "Search records...";
-            this.txtSearch.Size = new System.Drawing.Size(220, 29);
+            this.txtSearch.Size = new System.Drawing.Size(180, 29);
             this.txtSearch.TabIndex = 0;
             this.txtSearch.TextChanged += new System.EventHandler(this.FilterOrSearch_Changed);
+            // 
+            // pnlReportMetrics
+            // 
+            this.pnlReportMetrics.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
+            this.pnlReportMetrics.Controls.Add(this.pnlKpiSummaryBadges);
+            this.pnlReportMetrics.Controls.Add(this.lblReportSelectedCount);
+            this.pnlReportMetrics.Controls.Add(this.btnToggleSelectAll);
+            this.pnlReportMetrics.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlReportMetrics.Location = new System.Drawing.Point(0, 52);
+            this.pnlReportMetrics.Name = "pnlReportMetrics";
+            this.pnlReportMetrics.Size = new System.Drawing.Size(930, 44);
+            this.pnlReportMetrics.TabIndex = 4;
+            this.pnlReportMetrics.Visible = false;
+            this.pnlReportMetrics.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlReportMetrics_Paint);
+            // 
+            // btnToggleSelectAll
+            // 
+            this.btnToggleSelectAll.BackColor = System.Drawing.Color.White;
+            this.btnToggleSelectAll.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnToggleSelectAll.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(203, 213, 225);
+            this.btnToggleSelectAll.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnToggleSelectAll.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnToggleSelectAll.ForeColor = System.Drawing.Color.FromArgb(51, 65, 85);
+            this.btnToggleSelectAll.Location = new System.Drawing.Point(12, 8);
+            this.btnToggleSelectAll.Name = "btnToggleSelectAll";
+            this.btnToggleSelectAll.Size = new System.Drawing.Size(115, 28);
+            this.btnToggleSelectAll.TabIndex = 0;
+            this.btnToggleSelectAll.Text = "☑ Select All";
+            this.btnToggleSelectAll.UseVisualStyleBackColor = false;
+            this.btnToggleSelectAll.Click += new System.EventHandler(this.btnToggleSelectAll_Click);
+            // 
+            // lblReportSelectedCount
+            // 
+            this.lblReportSelectedCount.AutoSize = true;
+            this.lblReportSelectedCount.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblReportSelectedCount.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
+            this.lblReportSelectedCount.Location = new System.Drawing.Point(135, 12);
+            this.lblReportSelectedCount.Name = "lblReportSelectedCount";
+            this.lblReportSelectedCount.Size = new System.Drawing.Size(250, 20);
+            this.lblReportSelectedCount.TabIndex = 1;
+            this.lblReportSelectedCount.Text = "0 of 0 selected (generating for all filtered)";
+            // 
+            // pnlKpiSummaryBadges
+            // 
+            this.pnlKpiSummaryBadges.BackColor = System.Drawing.Color.Transparent;
+            this.pnlKpiSummaryBadges.Controls.Add(this.lblReportKpiUtil);
+            this.pnlKpiSummaryBadges.Controls.Add(this.lblReportKpiBalance);
+            this.pnlKpiSummaryBadges.Controls.Add(this.lblReportKpiUsed);
+            this.pnlKpiSummaryBadges.Controls.Add(this.lblReportKpiAllocated);
+            this.pnlKpiSummaryBadges.Controls.Add(this.lblReportKpiStaff);
+            this.pnlKpiSummaryBadges.Dock = System.Windows.Forms.DockStyle.Right;
+            this.pnlKpiSummaryBadges.Location = new System.Drawing.Point(460, 0);
+            this.pnlKpiSummaryBadges.Name = "pnlKpiSummaryBadges";
+            this.pnlKpiSummaryBadges.Size = new System.Drawing.Size(470, 44);
+            this.pnlKpiSummaryBadges.TabIndex = 2;
+            // 
+            // lblReportKpiStaff
+            // 
+            this.lblReportKpiStaff.AutoSize = true;
+            this.lblReportKpiStaff.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblReportKpiStaff.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
+            this.lblReportKpiStaff.Location = new System.Drawing.Point(5, 12);
+            this.lblReportKpiStaff.Name = "lblReportKpiStaff";
+            this.lblReportKpiStaff.Size = new System.Drawing.Size(70, 20);
+            this.lblReportKpiStaff.TabIndex = 0;
+            this.lblReportKpiStaff.Text = "👥 Staff: 0";
+            // 
+            // lblReportKpiAllocated
+            // 
+            this.lblReportKpiAllocated.AutoSize = true;
+            this.lblReportKpiAllocated.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblReportKpiAllocated.ForeColor = System.Drawing.Color.FromArgb(37, 99, 235);
+            this.lblReportKpiAllocated.Location = new System.Drawing.Point(85, 12);
+            this.lblReportKpiAllocated.Name = "lblReportKpiAllocated";
+            this.lblReportKpiAllocated.Size = new System.Drawing.Size(85, 20);
+            this.lblReportKpiAllocated.TabIndex = 1;
+            this.lblReportKpiAllocated.Text = "📊 Quota: 0d";
+            // 
+            // lblReportKpiUsed
+            // 
+            this.lblReportKpiUsed.AutoSize = true;
+            this.lblReportKpiUsed.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblReportKpiUsed.ForeColor = System.Drawing.Color.FromArgb(217, 119, 6);
+            this.lblReportKpiUsed.Location = new System.Drawing.Point(185, 12);
+            this.lblReportKpiUsed.Name = "lblReportKpiUsed";
+            this.lblReportKpiUsed.Size = new System.Drawing.Size(80, 20);
+            this.lblReportKpiUsed.TabIndex = 2;
+            this.lblReportKpiUsed.Text = "🌴 Taken: 0d";
+            // 
+            // lblReportKpiBalance
+            // 
+            this.lblReportKpiBalance.AutoSize = true;
+            this.lblReportKpiBalance.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblReportKpiBalance.ForeColor = System.Drawing.Color.FromArgb(22, 163, 74);
+            this.lblReportKpiBalance.Location = new System.Drawing.Point(280, 12);
+            this.lblReportKpiBalance.Name = "lblReportKpiBalance";
+            this.lblReportKpiBalance.Size = new System.Drawing.Size(90, 20);
+            this.lblReportKpiBalance.TabIndex = 3;
+            this.lblReportKpiBalance.Text = "⚖️ Balance: 0d";
+            // 
+            // lblReportKpiUtil
+            // 
+            this.lblReportKpiUtil.AutoSize = true;
+            this.lblReportKpiUtil.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.lblReportKpiUtil.ForeColor = System.Drawing.Color.FromArgb(124, 58, 237);
+            this.lblReportKpiUtil.Location = new System.Drawing.Point(380, 12);
+            this.lblReportKpiUtil.Name = "lblReportKpiUtil";
+            this.lblReportKpiUtil.Size = new System.Drawing.Size(75, 20);
+            this.lblReportKpiUtil.TabIndex = 4;
+            this.lblReportKpiUtil.Text = "📈 Util: 0%";
             // 
             // MainForm
             // 
@@ -1340,8 +1616,14 @@ namespace ELMS.Forms
         private System.Windows.Forms.Button btnNavEmployees;
         private System.Windows.Forms.Button btnNavDepartments;
         private System.Windows.Forms.Button btnNavRoles;
+        private System.Windows.Forms.Button btnNavApprovals;
         private System.Windows.Forms.Button btnNavClearances;
+        private System.Windows.Forms.Button btnNavConfigurations;
         private System.Windows.Forms.Button btnNavLedger;
+        private System.Windows.Forms.Panel pnlConfigSubNav;
+        private System.Windows.Forms.Button btnConfigTabClearance;
+        private System.Windows.Forms.Button btnConfigTabLeave;
+        private System.Windows.Forms.Button btnConfigTabApproval;
         private System.Windows.Forms.Panel pnlSidebarBottom;
         private System.Windows.Forms.Panel pnlUserCard;
         private System.Windows.Forms.Label lblUserAvatar;
@@ -1419,7 +1701,19 @@ namespace ELMS.Forms
         private System.Windows.Forms.TextBox txtSearch;
         private System.Windows.Forms.ComboBox cboFilter1;
         private System.Windows.Forms.ComboBox cboFilter2;
+        private System.Windows.Forms.ComboBox cboFilter3;
         private System.Windows.Forms.Button btnToolbarAction;
+        private System.Windows.Forms.Button btnSecondaryAction;
+        private System.Windows.Forms.Panel pnlReportMetrics;
+        private System.Windows.Forms.Button btnToggleSelectAll;
+        private System.Windows.Forms.Label lblReportSelectedCount;
+        private System.Windows.Forms.Panel pnlKpiSummaryBadges;
+        private System.Windows.Forms.Label lblReportKpiStaff;
+        private System.Windows.Forms.Label lblReportKpiAllocated;
+        private System.Windows.Forms.Label lblReportKpiUsed;
+        private System.Windows.Forms.Label lblReportKpiBalance;
+        private System.Windows.Forms.Label lblReportKpiUtil;
         private System.Windows.Forms.DataGridView dgvData;
+        private ELMS.Forms.ConfigurationsView ucConfigurations;
     }
 }

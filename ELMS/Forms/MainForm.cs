@@ -15,10 +15,12 @@ namespace ELMS.Forms
         {
             Dashboard,
             Leaves,
+            Approvals,
             Employees,
             Departments,
             Roles,
             Clearances,
+            Configurations,
             Ledger
         }
 
@@ -31,6 +33,15 @@ namespace ELMS.Forms
         }
 
         private LeaveSubTab _currentLeaveSubTab = LeaveSubTab.Requests;
+
+        private enum ConfigSubTab
+        {
+            Clearance,
+            Leave,
+            Approval
+        }
+
+        private ConfigSubTab _currentConfigSubTab = ConfigSubTab.Clearance;
 
         private ActiveView _currentView = ActiveView.Dashboard;
         private bool _isSidebarCollapsed = false;
@@ -49,12 +60,16 @@ namespace ELMS.Forms
         private void ApplyThemeAndStyles()
         {
             ElmsTheme.ApplyGridStyle(dgvData);
+            dgvData.CurrentCellDirtyStateChanged += dgvData_CurrentCellDirtyStateChanged;
+            dgvData.CellValueChanged += dgvData_CellValueChanged;
 
             SetupNavHover(btnNavDashboard);
             SetupNavHover(btnNavLeaves);
+            SetupNavHover(btnNavApprovals);
             SetupNavHover(btnNavEmployees);
             SetupNavHover(btnNavRoles);
             SetupNavHover(btnNavClearances);
+            SetupNavHover(btnNavConfigurations);
             SetupNavHover(btnNavLedger);
 
             pnlUserCard.MouseEnter += (s, e) => pnlUserCard.BackColor = Color.FromArgb(241, 245, 249);
@@ -96,6 +111,15 @@ namespace ELMS.Forms
                                 AuthService.Instance.HasRole(SystemRole.HR_Manager);
             btnNavEmployees.Visible = isPrivileged;
             btnNavRoles.Visible = isPrivileged;
+            btnNavConfigurations.Visible = isPrivileged;
+
+            bool canApprove = AuthService.Instance.HasAnyRole(
+                SystemRole.Admin,
+                SystemRole.HR_Manager,
+                SystemRole.Department_Head,
+                SystemRole.Clearance_Officer
+            );
+            btnNavApprovals.Visible = canApprove;
         }
 
         private void btnToggleSidebar_Click(object sender, EventArgs e)
@@ -108,10 +132,12 @@ namespace ELMS.Forms
                 lblBrandSub.Visible = false;
                 btnNavDashboard.Text = "D";
                 btnNavLeaves.Text = "L";
+                btnNavApprovals.Text = "A";
                 btnNavEmployees.Text = "E";
                 btnNavRoles.Text = "R";
                 btnNavClearances.Text = "C";
-                btnNavLedger.Text = "Q";
+                btnNavConfigurations.Text = "S";
+                btnNavLedger.Text = "R";
                 lblUserName.Visible = false;
                 lblUserRole.Visible = false;
                 lblDropdownArrow.Visible = false;
@@ -123,10 +149,12 @@ namespace ELMS.Forms
                 lblBrandSub.Visible = true;
                 btnNavDashboard.Text = "Dashboard";
                 btnNavLeaves.Text = "Leave Requests";
+                btnNavApprovals.Text = "Approvals";
                 btnNavEmployees.Text = "Employees";
                 btnNavRoles.Text = "User Roles";
-                btnNavClearances.Text = "Clearance Desk";
-                btnNavLedger.Text = "Quota Ledger";
+                btnNavClearances.Text = "Clearances";
+                btnNavConfigurations.Text = "Configurations";
+                btnNavLedger.Text = "Reports & Analytics";
                 lblUserName.Visible = true;
                 lblUserRole.Visible = true;
                 lblDropdownArrow.Visible = true;
@@ -163,8 +191,13 @@ namespace ELMS.Forms
             ResetNavButtons();
 
             pnlDashboard.Visible = (view == ActiveView.Dashboard);
-            pnlGridView.Visible = (view != ActiveView.Dashboard);
+            pnlGridView.Visible = (view != ActiveView.Dashboard && view != ActiveView.Configurations);
             pnlLeaveSubNav.Visible = (view == ActiveView.Leaves);
+            pnlConfigSubNav.Visible = false;
+            pnlReportMetrics.Visible = (view == ActiveView.Ledger);
+            cboFilter3.Visible = (view == ActiveView.Ledger);
+            btnSecondaryAction.Visible = (view == ActiveView.Ledger);
+            if (ucConfigurations != null) ucConfigurations.Visible = (view == ActiveView.Configurations);
 
             switch (view)
             {
@@ -176,20 +209,16 @@ namespace ELMS.Forms
                     break;
                 case ActiveView.Leaves:
                     HighlightNav(btnNavLeaves);
-                    bool canApprove = AuthService.Instance.HasAnyRole(SystemRole.Admin, SystemRole.HR_Manager, SystemRole.Department_Head, SystemRole.Clearance_Officer);
-                    btnLeaveTabApprovals.Visible = canApprove;
-                    if (!canApprove)
-                    {
-                        btnLeaveTabTypes.Location = new System.Drawing.Point(136, 4);
-                        btnLeaveTabEntitlements.Location = new System.Drawing.Point(252, 4);
-                    }
-                    else
-                    {
-                        btnLeaveTabApprovals.Location = new System.Drawing.Point(136, 4);
-                        btnLeaveTabTypes.Location = new System.Drawing.Point(252, 4);
-                        btnLeaveTabEntitlements.Location = new System.Drawing.Point(368, 4);
-                    }
+                    btnLeaveTabApprovals.Visible = false;
+                    btnLeaveTabTypes.Location = new System.Drawing.Point(136, 4);
+                    btnLeaveTabEntitlements.Location = new System.Drawing.Point(252, 4);
                     SelectLeaveSubTab(LeaveSubTab.Requests);
+                    break;
+                case ActiveView.Approvals:
+                    HighlightNav(btnNavApprovals);
+                    lblBreadcrumb.Text = "Approvals Desk  /  Leave Approvals Queue";
+                    SetupLeaveApprovalsToolbar();
+                    LoadLeaveApprovalsSubGrid();
                     break;
                 case ActiveView.Employees:
                     HighlightNav(btnNavEmployees);
@@ -215,9 +244,23 @@ namespace ELMS.Forms
                     SetupClearancesToolbar();
                     LoadClearancesGrid();
                     break;
+                case ActiveView.Configurations:
+                    HighlightNav(btnNavConfigurations);
+                    lblBreadcrumb.Text = "System Administration  /  Configurations Desk";
+                    pnlDashboard.Visible = false;
+                    pnlGridView.Visible = false;
+                    if (ucConfigurations != null)
+                    {
+                        ucConfigurations.Visible = true;
+                        ucConfigurations.BringToFront();
+                        ucConfigurations.RefreshData();
+                    }
+                    break;
                 case ActiveView.Ledger:
                     HighlightNav(btnNavLedger);
-                    lblBreadcrumb.Text = "Quota Ledger  /  Balances";
+                    lblBreadcrumb.Text = "Reports & Analytics  /  Leave Summary & Quota Analytics";
+                    pnlReportMetrics.BringToFront();
+                    pnlToolbar.BringToFront();
                     SetupLedgerToolbar();
                     LoadLedgerGrid();
                     break;
@@ -226,7 +269,7 @@ namespace ELMS.Forms
 
         private void ResetNavButtons()
         {
-            foreach (var btn in new[] { btnNavDashboard, btnNavLeaves, btnNavEmployees, btnNavDepartments, btnNavRoles, btnNavClearances, btnNavLedger })
+            foreach (var btn in new[] { btnNavDashboard, btnNavLeaves, btnNavApprovals, btnNavEmployees, btnNavDepartments, btnNavRoles, btnNavClearances, btnNavConfigurations, btnNavLedger })
             {
                 btn.BackColor = Color.Transparent;
                 btn.ForeColor = Color.FromArgb(71, 85, 105);
@@ -248,7 +291,9 @@ namespace ELMS.Forms
         private void btnNavEmployees_Click(object sender, EventArgs e) => SwitchView(ActiveView.Employees);
         private void btnNavDepartments_Click(object sender, EventArgs e) => SwitchView(ActiveView.Departments);
         private void btnNavRoles_Click(object sender, EventArgs e) => SwitchView(ActiveView.Roles);
+        private void btnNavApprovals_Click(object sender, EventArgs e) => SwitchView(ActiveView.Approvals);
         private void btnNavClearances_Click(object sender, EventArgs e) => SwitchView(ActiveView.Clearances);
+        private void btnNavConfigurations_Click(object sender, EventArgs e) => SwitchView(ActiveView.Configurations);
         private void btnNavLedger_Click(object sender, EventArgs e) => SwitchView(ActiveView.Ledger);
 
         private void btnTabEmployees_Click(object sender, EventArgs e) => ShowEmployeesTab();
@@ -464,14 +509,18 @@ namespace ELMS.Forms
                 DateTime.Today >= r.StartDate.Date && DateTime.Today <= r.EndDate.Date);
 
             lblLeaveKpi1Val.Text = total.ToString();
+            lblLeaveKpi1Sub.Text = "All Submitted Requests";
             lblLeaveKpi2Val.Text = pending.ToString();
+            lblLeaveKpi2Sub.Text = "Awaiting Decision";
             lblLeaveKpi3Val.Text = clearance.ToString();
+            lblLeaveKpi3Sub.Text = "Clearance Review";
             lblLeaveKpi4Val.Text = active.ToString();
+            lblLeaveKpi4Sub.Text = "Currently Away";
 
             pnlPieContainer.Invalidate();
         }
 
-        private (Rectangle pieRect, dynamic[] segments, float[] startAngles, float[] sweepAngles) GetPieGeometry()
+        private (int centerX, int centerY, int outerRadius, int innerRadius, dynamic[] segments, float[] startAngles, float[] sweepAngles, int leftRegionW) GetPieGeometry()
         {
             var reqs = DataStore.Instance.LeaveRequests;
             int total = reqs.Count;
@@ -482,17 +531,25 @@ namespace ELMS.Forms
 
             int safeTotal = Math.Max(1, total);
 
-            int chartSize = Math.Min(220, pnlPieContainer.ClientSize.Height - 110);
-            int chartX = (pnlPieContainer.ClientSize.Width - chartSize) / 2;
-            int chartY = 20;
-            Rectangle pieRect = new Rectangle(chartX, chartY, chartSize, chartSize);
+            int totalW = pnlPieContainer.ClientSize.Width;
+            int totalH = pnlPieContainer.ClientSize.Height;
+
+            int leftRegionW = Math.Max(320, (int)(totalW * 0.44f));
+            int chartDiameter = Math.Min(220, Math.Min(leftRegionW - 40, totalH - 90));
+            chartDiameter = Math.Max(160, chartDiameter);
+
+            int outerRadius = chartDiameter / 2;
+            int innerRadius = (int)(outerRadius * 0.65);
+
+            int centerX = leftRegionW / 2;
+            int centerY = 24 + outerRadius;
 
             var segments = new[]
             {
-                new { Label = "Approved", Count = approved, Color = Color.FromArgb(22, 163, 74) },
-                new { Label = "Under Review", Count = pending, Color = Color.FromArgb(234, 88, 12) },
-                new { Label = "In Clearance", Count = clearance, Color = Color.FromArgb(37, 99, 235) },
-                new { Label = "Rejected", Count = rejected, Color = Color.FromArgb(220, 38, 38) }
+                new { Label = "Approved", Count = approved, Color = Color.FromArgb(22, 163, 74) },       // #16A34A
+                new { Label = "Under Review", Count = pending, Color = Color.FromArgb(234, 88, 12) },    // #EA580C
+                new { Label = "In Clearance", Count = clearance, Color = Color.FromArgb(37, 99, 235) },  // #2563EB
+                new { Label = "Rejected", Count = rejected, Color = Color.FromArgb(220, 38, 38) }        // #DC2626
             };
 
             float startAngle = -90f;
@@ -507,29 +564,25 @@ namespace ELMS.Forms
                 startAngle += sweep;
             }
 
-            return (pieRect, segments, startAngles, sweepAngles);
+            return (centerX, centerY, outerRadius, innerRadius, segments, startAngles, sweepAngles, leftRegionW);
         }
 
         private void pnlPieContainer_MouseMove(object sender, MouseEventArgs e)
         {
             var geo = GetPieGeometry();
-            int centerX = geo.pieRect.X + geo.pieRect.Width / 2;
-            int centerY = geo.pieRect.Y + geo.pieRect.Height / 2;
-
-            int dx = e.X - centerX;
-            int dy = e.Y - centerY;
+            int dx = e.X - geo.centerX;
+            int dy = e.Y - geo.centerY;
             double dist = Math.Sqrt(dx * dx + dy * dy);
-            int radius = geo.pieRect.Width / 2;
 
             int hoveredIndex = -1;
-            if (dist <= radius + 10)
+            if (dist >= geo.innerRadius - 4 && dist <= geo.outerRadius + 8)
             {
-                double angle = Math.Atan2(dy, dx) * 180 / Math.PI;
-                double adjAngle = (angle + 90 + 360) % 360;
+                double angle = Math.Atan2(dy, dx) * 180.0 / Math.PI;
+                double adjAngle = (angle + 90.0 + 360.0) % 360.0;
 
                 for (int i = 0; i < geo.segments.Length; i++)
                 {
-                    double sAngle = (geo.startAngles[i] + 90 + 360) % 360;
+                    double sAngle = (geo.startAngles[i] + 90.0 + 360.0) % 360.0;
                     double eAngle = sAngle + geo.sweepAngles[i];
 
                     if (adjAngle >= sAngle && adjAngle < eAngle)
@@ -559,22 +612,31 @@ namespace ELMS.Forms
         private void pnlPieContainer_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             var geo = GetPieGeometry();
-            int total = Math.Max(1, DataStore.Instance.LeaveRequests.Count);
+            var reqs = DataStore.Instance.LeaveRequests;
+            int total = reqs.Count;
+            int safeTotal = Math.Max(1, total);
 
+            Rectangle outerRect = new Rectangle(geo.centerX - geo.outerRadius, geo.centerY - geo.outerRadius, geo.outerRadius * 2, geo.outerRadius * 2);
+            Rectangle innerRect = new Rectangle(geo.centerX - geo.innerRadius, geo.centerY - geo.innerRadius, geo.innerRadius * 2, geo.innerRadius * 2);
+
+            // =====================================================================
+            // 1. LEFT SIDE: CIRCLE DONUT CHART (HRMS Style - Clean Donut Ring)
+            // =====================================================================
             for (int i = 0; i < geo.segments.Length; i++)
             {
                 if (geo.sweepAngles[i] <= 0) continue;
 
                 var seg = geo.segments[i];
-                Rectangle drawRect = geo.pieRect;
+                Rectangle drawRect = outerRect;
 
                 if (i == _hoveredPieSlice)
                 {
-                    double midAngle = (geo.startAngles[i] + geo.sweepAngles[i] / 2) * Math.PI / 180.0;
-                    int explodeX = (int)(Math.Cos(midAngle) * 8);
-                    int explodeY = (int)(Math.Sin(midAngle) * 8);
+                    double midAngle = (geo.startAngles[i] + geo.sweepAngles[i] / 2.0) * Math.PI / 180.0;
+                    int explodeX = (int)(Math.Cos(midAngle) * 5);
+                    int explodeY = (int)(Math.Sin(midAngle) * 5);
                     drawRect.Offset(explodeX, explodeY);
                 }
 
@@ -582,56 +644,103 @@ namespace ELMS.Forms
                 {
                     e.Graphics.FillPie(brush, drawRect, geo.startAngles[i], geo.sweepAngles[i]);
                 }
+            }
 
-                using (var pen = new Pen(Color.White, 2))
+            // Cut out inner hole to create authentic HRMS Donut Ring
+            using (var holeBrush = new SolidBrush(Color.White))
+            {
+                e.Graphics.FillEllipse(holeBrush, innerRect);
+            }
+
+            // Radial crisp white separators between slices
+            for (int i = 0; i < geo.segments.Length; i++)
+            {
+                if (geo.sweepAngles[i] <= 0) continue;
+
+                double rad = geo.startAngles[i] * Math.PI / 180.0;
+                float cos = (float)Math.Cos(rad);
+                float sin = (float)Math.Sin(rad);
+
+                PointF pInner = new PointF(geo.centerX + cos * geo.innerRadius, geo.centerY + sin * geo.innerRadius);
+                PointF pOuter = new PointF(geo.centerX + cos * (geo.outerRadius + 1), geo.centerY + sin * (geo.outerRadius + 1));
+
+                using (var sepPen = new Pen(Color.White, 2.5f))
                 {
-                    e.Graphics.DrawPie(pen, drawRect, geo.startAngles[i], geo.sweepAngles[i]);
+                    e.Graphics.DrawLine(sepPen, pInner, pOuter);
                 }
             }
 
+            // Subtle outer and inner rim rings for clean modern polish
+            using (var rimPen = new Pen(Color.FromArgb(241, 245, 249), 1.5f))
+            {
+                e.Graphics.DrawEllipse(rimPen, outerRect);
+                e.Graphics.DrawEllipse(rimPen, innerRect);
+            }
+
+            // Center Text inside Donut Hole: Total Count + "Total Requests"
+            using (var fontTotal = new Font("Segoe UI", 22f, FontStyle.Bold))
+            using (var fontTotalSub = new Font("Segoe UI", 8.5f, FontStyle.Regular))
+            using (var valBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+            using (var subBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+            {
+                string valStr = total.ToString();
+                string subStr = "Total Requests";
+
+                var valSz = e.Graphics.MeasureString(valStr, fontTotal);
+                var subSz = e.Graphics.MeasureString(subStr, fontTotalSub);
+
+                float blockH = valSz.Height + subSz.Height - 6;
+                float startY = innerRect.Y + (innerRect.Height - blockH) / 2f;
+
+                float valX = innerRect.X + (innerRect.Width - valSz.Width) / 2f;
+                float subX = innerRect.X + (innerRect.Width - subSz.Width) / 2f;
+
+                e.Graphics.DrawString(valStr, fontTotal, valBrush, valX, startY);
+                e.Graphics.DrawString(subStr, fontTotalSub, subBrush, subX, startY + valSz.Height - 6);
+            }
+
+            // Hover tooltip if slice is hovered
             if (_hoveredPieSlice >= 0 && _hoveredPieSlice < geo.segments.Length)
             {
                 var hSeg = geo.segments[_hoveredPieSlice];
-                double hPct = ((double)hSeg.Count / total) * 100.0;
+                double hPct = ((double)hSeg.Count / safeTotal) * 100.0;
                 string hoverText = $"{hSeg.Label}: {hSeg.Count} requests ({hPct:F1}%)";
 
-                using (var fontTip = new Font("Segoe UI", 10f, FontStyle.Bold))
+                using (var fontTip = new Font("Segoe UI", 9f, FontStyle.Bold))
                 using (var bgBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
                 using (var textBrush = new SolidBrush(Color.White))
                 {
                     var sz = e.Graphics.MeasureString(hoverText, fontTip);
-                    int tipX = (pnlPieContainer.ClientSize.Width - (int)sz.Width) / 2;
-                    int tipY = geo.pieRect.Y - 14;
+                    int tipX = geo.centerX - (int)(sz.Width / 2);
+                    int tipY = outerRect.Y - 18;
 
-                    e.Graphics.FillRectangle(bgBrush, tipX - 10, tipY - 4, sz.Width + 20, sz.Height + 8);
+                    var tipRect = new Rectangle(tipX - 8, tipY - 3, (int)sz.Width + 16, (int)sz.Height + 6);
+                    e.Graphics.FillRectangle(bgBrush, tipRect);
                     e.Graphics.DrawString(hoverText, fontTip, textBrush, tipX, tipY);
                 }
             }
 
-            // Legend HORIZONTALLY BELOW the chart (Never on the right side)
-            int legendY = geo.pieRect.Bottom + 35;
+            // =====================================================================
+            // 2. BOTTOM LEGEND (UNDER THE CIRCLE): CLEAN ONLY, STRICTLY NO PERCENTAGES
+            // =====================================================================
+            int legendY = outerRect.Bottom + 26;
             int totalLegW = 0;
-            string[] legTexts = new string[geo.segments.Length];
-            Size[] textSizes = new Size[geo.segments.Length];
+            Size[] legSizes = new Size[geo.segments.Length];
 
-            using (var fontLeg = new Font("Segoe UI", 9.5f))
+            using (var fontLeg = new Font("Segoe UI", 9f, FontStyle.Regular))
             {
                 for (int i = 0; i < geo.segments.Length; i++)
                 {
-                    var seg = geo.segments[i];
-                    double pct = ((double)seg.Count / total) * 100.0;
-                    legTexts[i] = $"{seg.Label}: {seg.Count} ({pct:F1}%)";
-                    var sz = TextRenderer.MeasureText(legTexts[i], fontLeg);
-                    textSizes[i] = sz;
-                    totalLegW += sz.Width + 36;
+                    legSizes[i] = TextRenderer.MeasureText(geo.segments[i].Label, fontLeg);
+                    totalLegW += 10 + 6 + legSizes[i].Width + 16;
                 }
             }
 
-            int curLegX = Math.Max(20, (pnlPieContainer.ClientSize.Width - totalLegW) / 2);
+            int curLegX = Math.Max(10, (geo.leftRegionW - totalLegW) / 2);
 
-            using (var fontLeg = new Font("Segoe UI", 9.5f))
-            using (var fontBold = new Font("Segoe UI", 9.5f, FontStyle.Bold))
-            using (var textBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+            using (var fontLeg = new Font("Segoe UI", 9f, FontStyle.Regular))
+            using (var fontBold = new Font("Segoe UI", 9f, FontStyle.Bold))
+            using (var textBrush = new SolidBrush(Color.FromArgb(51, 65, 85)))
             {
                 for (int i = 0; i < geo.segments.Length; i++)
                 {
@@ -640,15 +749,140 @@ namespace ELMS.Forms
 
                     using (var bulletBrush = new SolidBrush(seg.Color))
                     {
-                        e.Graphics.FillEllipse(bulletBrush, curLegX, legendY + 4, 10, 10);
+                        e.Graphics.FillEllipse(bulletBrush, curLegX, legendY + 4, 9, 9);
                     }
 
-                    var fontToUse = isHover ? fontBold : fontLeg;
-                    e.Graphics.DrawString(legTexts[i], fontToUse, textBrush, curLegX + 16, legendY);
+                    var f = isHover ? fontBold : fontLeg;
+                    e.Graphics.DrawString(seg.Label, f, textBrush, curLegX + 15, legendY);
 
-                    curLegX += textSizes[i].Width + 36;
+                    curLegX += 15 + legSizes[i].Width + 16;
                 }
             }
+
+            // =====================================================================
+            // 3. VERTICAL DIVIDER SEPARATING CIRCLE CHART AND ASIDE BAR LIST
+            // =====================================================================
+            int dividerX = geo.leftRegionW + 12;
+            using (var divPen = new Pen(Color.FromArgb(241, 245, 249), 1.5f))
+            {
+                e.Graphics.DrawLine(divPen, dividerX, 16, dividerX, pnlPieContainer.ClientSize.Height - 16);
+            }
+
+            // =====================================================================
+            // 4. RIGHT ASIDE BAR LIST: REQUEST LEAVE TYPE PERCENTAGES (HRMS BarList Style)
+            // =====================================================================
+            int asideX = dividerX + 24;
+            int asideW = pnlPieContainer.ClientSize.Width - asideX - 20;
+
+            if (asideW > 120)
+            {
+                // Aside Header
+                using (var fontHeaderTitle = new Font("Segoe UI", 10.5f, FontStyle.Bold))
+                using (var fontHeaderSub = new Font("Segoe UI", 8.5f, FontStyle.Regular))
+                using (var titleBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+                using (var subBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+                {
+                    e.Graphics.DrawString("Request Volume by Leave Type", fontHeaderTitle, titleBrush, asideX, 12);
+                    e.Graphics.DrawString("Ranked distribution and percentage share of all leave categories", fontHeaderSub, subBrush, asideX, 32);
+                }
+
+                // Compute Leave Type Counts & Percentages
+                var leaveTypes = DataStore.Instance.LeaveTypes;
+                var typeRows = leaveTypes.Select(lt =>
+                {
+                    int count = reqs.Count(r => r.LeaveTypeId == lt.Id);
+                    double share = ((double)count / safeTotal) * 100.0;
+                    Color color = lt.Code switch
+                    {
+                        "ANNUAL" => Color.FromArgb(234, 88, 12),      // #EA580C Orange
+                        "SICK" => Color.FromArgb(37, 99, 235),        // #2563EB Blue
+                        "STUDY" => Color.FromArgb(139, 92, 246),      // #8B5CF6 Purple
+                        "MATERNITY" => Color.FromArgb(236, 72, 153),  // #EC4899 Pink
+                        _ => Color.FromArgb(16, 185, 129)             // #10B981 Emerald
+                    };
+                    return new { lt.Id, lt.Name, lt.Code, Count = count, Share = share, Color = color };
+                }).OrderByDescending(x => x.Count).ToList();
+
+                int curY = 64;
+                int rowGap = 46;
+                int trackHeight = 7;
+                int trackWidth = asideW - 10;
+
+                using (var fontLabel = new Font("Segoe UI", 9.5f, FontStyle.Regular))
+                using (var fontVal = new Font("Segoe UI", 9.5f, FontStyle.Bold))
+                using (var fontPct = new Font("Segoe UI", 9f, FontStyle.Regular))
+                using (var labelBrush = new SolidBrush(Color.FromArgb(30, 41, 59)))
+                using (var valBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+                using (var pctBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+                using (var trackBgBrush = new SolidBrush(Color.FromArgb(241, 245, 249)))
+                {
+                    foreach (var item in typeRows)
+                    {
+                        if (curY + 30 > pnlPieContainer.ClientSize.Height) break;
+
+                        // Bullet indicator
+                        using (var dotBrush = new SolidBrush(item.Color))
+                        {
+                            e.Graphics.FillEllipse(dotBrush, asideX, curY + 4, 8, 8);
+                        }
+
+                        // Label (Left)
+                        e.Graphics.DrawString(item.Name, fontLabel, labelBrush, asideX + 14, curY);
+
+                        // Value & Share (Right)
+                        string valText = $"{item.Count} requests";
+                        string pctText = $"  {item.Share:F1}%";
+
+                        var valSz = e.Graphics.MeasureString(valText, fontVal);
+                        var pctSz = e.Graphics.MeasureString(pctText, fontPct);
+
+                        float rightTextX = asideX + trackWidth - (valSz.Width + pctSz.Width);
+                        e.Graphics.DrawString(valText, fontVal, valBrush, rightTextX, curY);
+                        e.Graphics.DrawString(pctText, fontPct, pctBrush, rightTextX + valSz.Width, curY);
+
+                        // Horizontal Meter Track (HRMS BarList style)
+                        int barTrackY = curY + 22;
+                        Rectangle trackRect = new Rectangle(asideX, barTrackY, trackWidth, trackHeight);
+
+                        // Draw background track with rounded ends
+                        using (var pathBg = CreateRoundedRectanglePath(trackRect, 3))
+                        {
+                            e.Graphics.FillPath(trackBgBrush, pathBg);
+                        }
+
+                        // Draw filled progress bar
+                        int fillWidth = Math.Max(0, (int)(trackWidth * (item.Share / 100.0)));
+                        if (fillWidth > 2)
+                        {
+                            Rectangle fillRect = new Rectangle(asideX, barTrackY, fillWidth, trackHeight);
+                            using (var pathFill = CreateRoundedRectanglePath(fillRect, 3))
+                            using (var fillBrush = new SolidBrush(item.Color))
+                            {
+                                e.Graphics.FillPath(fillBrush, pathFill);
+                            }
+                        }
+
+                        curY += rowGap;
+                    }
+                }
+            }
+        }
+
+        private static GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            if (rect.Width <= 0 || rect.Height <= 0) return path;
+
+            int d = radius * 2;
+            if (d > rect.Height) d = rect.Height;
+            if (d > rect.Width) d = rect.Width;
+
+            path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+            path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
+            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         private void btnLeaveTabRequests_Click(object sender, EventArgs e) => SelectLeaveSubTab(LeaveSubTab.Requests);
@@ -1371,18 +1605,395 @@ namespace ELMS.Forms
             menu.Show(pt);
         }
 
-        private void SetupLedgerToolbar()
+        private void btnConfigTabClearance_Click(object sender, EventArgs e) => SelectConfigSubTab(ConfigSubTab.Clearance);
+        private void btnConfigTabLeave_Click(object sender, EventArgs e) => SelectConfigSubTab(ConfigSubTab.Leave);
+        private void btnConfigTabApproval_Click(object sender, EventArgs e) => SelectConfigSubTab(ConfigSubTab.Approval);
+
+        private void SelectConfigSubTab(ConfigSubTab tab)
         {
-            txtSearch.PlaceholderText = "Search ledger by employee...";
+            _currentConfigSubTab = tab;
+            ResetConfigSubTabButtons();
+
+            switch (tab)
+            {
+                case ConfigSubTab.Clearance:
+                    HighlightConfigSubTab(btnConfigTabClearance);
+                    lblBreadcrumb.Text = "Configurations  /  Clearance Policies & Handover Units";
+                    SetupClearanceConfigToolbar();
+                    LoadClearanceConfigSubGrid();
+                    break;
+                case ConfigSubTab.Leave:
+                    HighlightConfigSubTab(btnConfigTabLeave);
+                    lblBreadcrumb.Text = "Configurations  /  Leave Types & Allocation Rules";
+                    SetupLeaveConfigToolbar();
+                    LoadLeaveConfigSubGrid();
+                    break;
+                case ConfigSubTab.Approval:
+                    HighlightConfigSubTab(btnConfigTabApproval);
+                    lblBreadcrumb.Text = "Configurations  /  Sequential Approval Workflows";
+                    SetupApprovalConfigToolbar();
+                    LoadApprovalConfigSubGrid();
+                    break;
+            }
+        }
+
+        private void HighlightConfigSubTab(Button btn)
+        {
+            btn.BackColor = Color.FromArgb(255, 247, 237);
+            btn.ForeColor = Color.FromArgb(234, 88, 12);
+            btn.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+        }
+
+        private void ResetConfigSubTabButtons()
+        {
+            foreach (var b in new[] { btnConfigTabClearance, btnConfigTabLeave, btnConfigTabApproval })
+            {
+                b.BackColor = Color.Transparent;
+                b.ForeColor = Color.FromArgb(100, 116, 139);
+                b.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular);
+            }
+        }
+
+        private void pnlConfigSubNav_Paint(object sender, PaintEventArgs e)
+        {
+            using (var pen = new Pen(Color.FromArgb(226, 232, 240), 1))
+            {
+                e.Graphics.DrawLine(pen, 0, pnlConfigSubNav.Height - 1, pnlConfigSubNav.Width, pnlConfigSubNav.Height - 1);
+            }
+        }
+
+        private void SetupClearanceConfigToolbar()
+        {
+            txtSearch.PlaceholderText = "Search policy code, name, or unit...";
             cboFilter1.Visible = true;
             cboFilter1.Items.Clear();
-            cboFilter1.Items.Add("All Leave Types");
-            foreach (var lt in DataStore.Instance.LeaveTypes) cboFilter1.Items.Add(lt.Name);
+            cboFilter1.Items.AddRange(new object[] { "All Policies", "Active Only", "Inactive Only" });
             cboFilter1.SelectedIndex = 0;
 
             cboFilter2.Visible = false;
+
             btnToolbarAction.Visible = true;
-            btnToolbarAction.Text = "Export CSV";
+            btnToolbarAction.Text = "+ New Clearance Policy";
+        }
+
+        private void LoadClearanceConfigSubGrid()
+        {
+            dgvData.Columns.Clear();
+            dgvData.Rows.Clear();
+
+            dgvData.Columns.Add("Code", "Policy Code");
+            dgvData.Columns.Add("Name", "Clearance Policy Name");
+            dgvData.Columns.Add("Type", "Target Request Desk");
+            dgvData.Columns.Add("Workflow", "Handover Mode");
+            dgvData.Columns.Add("Letter", "Clearance Letter");
+            dgvData.Columns.Add("Units", "Handover Units");
+            dgvData.Columns.Add("Status", "Status");
+
+            var actionCol = new DataGridViewButtonColumn
+            {
+                Name = "Actions",
+                HeaderText = "Actions",
+                Text = "⋮",
+                UseColumnTextForButtonValue = true,
+                Width = 65,
+                FlatStyle = FlatStyle.Flat
+            };
+            dgvData.Columns.Add(actionCol);
+
+            string search = txtSearch.Text.Trim().ToLowerInvariant();
+            string statusFilter = cboFilter1.SelectedItem?.ToString() ?? "All Policies";
+
+            foreach (var cp in DataStore.Instance.ClearancePolicies.OrderBy(p => p.Code))
+            {
+                if (statusFilter == "Active Only" && !cp.IsActive) continue;
+                if (statusFilter == "Inactive Only" && cp.IsActive) continue;
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    bool match = cp.Code.ToLowerInvariant().Contains(search) ||
+                                 cp.Name.ToLowerInvariant().Contains(search) ||
+                                 cp.RequestType.ToLowerInvariant().Contains(search) ||
+                                 string.Join(" ", cp.RequiredUnits).ToLowerInvariant().Contains(search);
+                    if (!match) continue;
+                }
+
+                int idx = dgvData.Rows.Add(
+                    cp.Code,
+                    cp.Name,
+                    cp.RequestType,
+                    cp.IsSequential ? "Sequential" : "Parallel",
+                    cp.GenerateClearanceLetter ? "YES" : "NO",
+                    string.Join(", ", cp.RequiredUnits),
+                    cp.IsActive ? "ACTIVE" : "INACTIVE"
+                );
+                dgvData.Rows[idx].Tag = cp;
+            }
+        }
+
+        private void SetupLeaveConfigToolbar()
+        {
+            txtSearch.PlaceholderText = "Search leave policy name or code...";
+            cboFilter1.Visible = true;
+            cboFilter1.Items.Clear();
+            cboFilter1.Items.AddRange(new object[] { "All Policies", "Active Only", "Inactive Only" });
+            cboFilter1.SelectedIndex = 0;
+
+            cboFilter2.Visible = false;
+
+            btnToolbarAction.Visible = true;
+            btnToolbarAction.Text = "+ New Leave Policy";
+        }
+
+        private void LoadLeaveConfigSubGrid()
+        {
+            dgvData.Columns.Clear();
+            dgvData.Rows.Clear();
+
+            dgvData.Columns.Add("Code", "Type Code");
+            dgvData.Columns.Add("Name", "Leave Policy Name");
+            dgvData.Columns.Add("Quota", "Annual Allocation");
+            dgvData.Columns.Add("Tenure", "Min Service");
+            dgvData.Columns.Add("Clearance", "Clearance Required");
+            dgvData.Columns.Add("Certificate", "Medical Cert Required");
+            dgvData.Columns.Add("Carry", "Carry-Forward");
+            dgvData.Columns.Add("Status", "Status");
+
+            var actionCol = new DataGridViewButtonColumn
+            {
+                Name = "Actions",
+                HeaderText = "Actions",
+                Text = "⋮",
+                UseColumnTextForButtonValue = true,
+                Width = 65,
+                FlatStyle = FlatStyle.Flat
+            };
+            dgvData.Columns.Add(actionCol);
+
+            string search = txtSearch.Text.Trim().ToLowerInvariant();
+            string statusFilter = cboFilter1.SelectedItem?.ToString() ?? "All Policies";
+
+            foreach (var lt in DataStore.Instance.LeaveTypes.OrderBy(l => l.Code))
+            {
+                if (statusFilter == "Active Only" && !lt.IsActive) continue;
+                if (statusFilter == "Inactive Only" && lt.IsActive) continue;
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    bool match = lt.Code.ToLowerInvariant().Contains(search) ||
+                                 lt.Name.ToLowerInvariant().Contains(search);
+                    if (!match) continue;
+                }
+
+                int idx = dgvData.Rows.Add(
+                    lt.Code,
+                    lt.Name,
+                    $"{lt.EntitlementDays} days/yr",
+                    lt.MinimumServiceMonths > 0 ? $"{lt.MinimumServiceMonths} mos" : "None",
+                    lt.RequiresClearance ? "YES" : "NO",
+                    lt.RequiresCertificate ? "YES" : "NO",
+                    lt.IsCarryForwardAllowed ? "YES" : "NO",
+                    lt.IsActive ? "ACTIVE" : "INACTIVE"
+                );
+                dgvData.Rows[idx].Tag = lt;
+            }
+        }
+
+        private void SetupApprovalConfigToolbar()
+        {
+            txtSearch.PlaceholderText = "Search workflow name or request desk...";
+            cboFilter1.Visible = true;
+            cboFilter1.Items.Clear();
+            cboFilter1.Items.AddRange(new object[] { "All Workflows", "Active Only", "Inactive Only" });
+            cboFilter1.SelectedIndex = 0;
+
+            cboFilter2.Visible = false;
+
+            btnToolbarAction.Visible = true;
+            btnToolbarAction.Text = "+ New Approval Workflow";
+        }
+
+        private void LoadApprovalConfigSubGrid()
+        {
+            dgvData.Columns.Clear();
+            dgvData.Rows.Clear();
+
+            dgvData.Columns.Add("Name", "Workflow Definition Name");
+            dgvData.Columns.Add("RequestType", "Target Request Desk");
+            dgvData.Columns.Add("Chain", "Sequential Approvers Chain");
+            dgvData.Columns.Add("Steps", "Steps");
+            dgvData.Columns.Add("Status", "Status");
+
+            var actionCol = new DataGridViewButtonColumn
+            {
+                Name = "Actions",
+                HeaderText = "Actions",
+                Text = "⋮",
+                UseColumnTextForButtonValue = true,
+                Width = 65,
+                FlatStyle = FlatStyle.Flat
+            };
+            dgvData.Columns.Add(actionCol);
+
+            string search = txtSearch.Text.Trim().ToLowerInvariant();
+            string statusFilter = cboFilter1.SelectedItem?.ToString() ?? "All Workflows";
+
+            foreach (var wf in DataStore.Instance.ApprovalWorkflows.OrderBy(w => w.Id))
+            {
+                if (statusFilter == "Active Only" && !wf.IsActive) continue;
+                if (statusFilter == "Inactive Only" && wf.IsActive) continue;
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    bool match = wf.Name.ToLowerInvariant().Contains(search) ||
+                                 wf.RequestType.ToLowerInvariant().Contains(search);
+                    if (!match) continue;
+                }
+
+                string chain = string.Join("  ➔  ", wf.Steps.OrderBy(s => s.StepOrder).Select(s => $"Step {s.StepOrder}: {s.ApproverRole}"));
+
+                int idx = dgvData.Rows.Add(
+                    wf.Name,
+                    wf.RequestType,
+                    chain,
+                    $"{wf.Steps.Count} Steps",
+                    wf.IsActive ? "ACTIVE" : "INACTIVE"
+                );
+                dgvData.Rows[idx].Tag = wf;
+            }
+        }
+
+        private void ShowClearancePolicyActionMenu(ClearancePolicy cp, int rowIndex, int colIndex)
+        {
+            var menu = new ContextMenuStrip();
+            menu.RenderMode = ToolStripRenderMode.System;
+            menu.Font = new Font("Segoe UI", 9.5F);
+
+            var itemEdit = new ToolStripMenuItem("Edit Clearance Policy", null, (s, ev) =>
+            {
+                using (var dlg = new ClearancePolicyDialog(cp))
+                {
+                    if (dlg.ShowDialog(this) == DialogResult.OK)
+                    {
+                        LoadClearanceConfigSubGrid();
+                    }
+                }
+            });
+
+            var itemToggle = new ToolStripMenuItem(cp.IsActive ? "Deactivate Policy" : "Activate Policy", null, (s, ev) =>
+            {
+                cp.IsActive = !cp.IsActive;
+                DataStore.Instance.NotifyChanged();
+                LoadClearanceConfigSubGrid();
+            });
+
+            var itemDelete = new ToolStripMenuItem("Delete Policy", null, (s, ev) =>
+            {
+                if (MessageBox.Show($"Are you sure you want to delete clearance policy '{cp.Name}'?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    DataStore.Instance.ClearancePolicies.Remove(cp);
+                    DataStore.Instance.NotifyChanged();
+                    LoadClearanceConfigSubGrid();
+                }
+            });
+
+            menu.Items.Add(itemEdit);
+            menu.Items.Add(itemToggle);
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(itemDelete);
+
+            Rectangle cellRect = dgvData.GetCellDisplayRectangle(colIndex, rowIndex, true);
+            Point pt = dgvData.PointToScreen(new Point(cellRect.Left, cellRect.Bottom));
+            menu.Show(pt);
+        }
+
+        private void ShowApprovalWorkflowActionMenu(ApprovalWorkflowDefinition wf, int rowIndex, int colIndex)
+        {
+            var menu = new ContextMenuStrip();
+            menu.RenderMode = ToolStripRenderMode.System;
+            menu.Font = new Font("Segoe UI", 9.5F);
+
+            var itemEdit = new ToolStripMenuItem("Edit Workflow Definition", null, (s, ev) =>
+            {
+                using (var dlg = new ApprovalWorkflowDialog(wf))
+                {
+                    if (dlg.ShowDialog(this) == DialogResult.OK)
+                    {
+                        LoadApprovalConfigSubGrid();
+                    }
+                }
+            });
+
+            var itemToggle = new ToolStripMenuItem(wf.IsActive ? "Deactivate Workflow" : "Activate Workflow", null, (s, ev) =>
+            {
+                wf.IsActive = !wf.IsActive;
+                DataStore.Instance.NotifyChanged();
+                LoadApprovalConfigSubGrid();
+            });
+
+            var itemDelete = new ToolStripMenuItem("Delete Workflow", null, (s, ev) =>
+            {
+                if (MessageBox.Show($"Are you sure you want to delete approval workflow '{wf.Name}'?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    DataStore.Instance.ApprovalWorkflows.Remove(wf);
+                    DataStore.Instance.NotifyChanged();
+                    LoadApprovalConfigSubGrid();
+                }
+            });
+
+            menu.Items.Add(itemEdit);
+            menu.Items.Add(itemToggle);
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add(itemDelete);
+
+            Rectangle cellRect = dgvData.GetCellDisplayRectangle(colIndex, rowIndex, true);
+            Point pt = dgvData.PointToScreen(new Point(cellRect.Left, cellRect.Bottom));
+            menu.Show(pt);
+        }
+
+        private int _reportTotalStaff = 0;
+        private int _reportTotalAllocated = 0;
+        private int _reportTotalUsed = 0;
+        private int _reportTotalBalance = 0;
+        private double _reportAvgUtil = 0.0;
+
+        private void SetupLedgerToolbar()
+        {
+            txtSearch.PlaceholderText = "Search employee, code, dept...";
+            txtSearch.Visible = true;
+
+            // Filter 1: Department
+            cboFilter1.Visible = true;
+            cboFilter1.Items.Clear();
+            cboFilter1.Items.Add("All Departments");
+            foreach (var d in DataStore.Instance.Departments.OrderBy(dep => dep.Name))
+            {
+                cboFilter1.Items.Add(d.Name);
+            }
+            cboFilter1.SelectedIndex = 0;
+
+            // Filter 2: Gender
+            cboFilter2.Visible = true;
+            cboFilter2.Items.Clear();
+            cboFilter2.Items.Add("All Genders");
+            cboFilter2.Items.Add("Male");
+            cboFilter2.Items.Add("Female");
+            cboFilter2.SelectedIndex = 0;
+
+            // Filter 3: Leave Type
+            cboFilter3.Visible = true;
+            cboFilter3.Items.Clear();
+            cboFilter3.Items.Add("All Leave Types");
+            foreach (var lt in DataStore.Instance.LeaveTypes.OrderBy(l => l.Name))
+            {
+                cboFilter3.Items.Add(lt.Name);
+            }
+            cboFilter3.SelectedIndex = 0;
+
+            btnToolbarAction.Visible = true;
+            btnToolbarAction.Text = "📊 Export Excel";
+
+            btnSecondaryAction.Visible = true;
+            btnSecondaryAction.Text = "📄 Export PDF";
         }
 
         private void FilterOrSearch_Changed(object sender, EventArgs e)
@@ -1407,6 +2018,10 @@ namespace ELMS.Forms
                     case LeaveSubTab.Entitlements: LoadLeaveEntitlementsSubGrid(); break;
                 }
             }
+            else if (_currentView == ActiveView.Approvals)
+            {
+                LoadLeaveApprovalsSubGrid();
+            }
             else if (_currentView == ActiveView.Employees)
             {
                 LoadEmployeesGrid();
@@ -1422,6 +2037,15 @@ namespace ELMS.Forms
             else if (_currentView == ActiveView.Clearances)
             {
                 LoadClearancesGrid();
+            }
+            else if (_currentView == ActiveView.Configurations)
+            {
+                switch (_currentConfigSubTab)
+                {
+                    case ConfigSubTab.Clearance: LoadClearanceConfigSubGrid(); break;
+                    case ConfigSubTab.Leave: LoadLeaveConfigSubGrid(); break;
+                    case ConfigSubTab.Approval: LoadApprovalConfigSubGrid(); break;
+                }
             }
             else if (_currentView == ActiveView.Ledger)
             {
@@ -1489,30 +2113,57 @@ namespace ELMS.Forms
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
+            var colSelect = new DataGridViewCheckBoxColumn
+            {
+                Name = "colSelect",
+                HeaderText = "☑",
+                Width = 42,
+                Resizable = DataGridViewTriState.False,
+                SortMode = DataGridViewColumnSortMode.NotSortable
+            };
+            dgvData.Columns.Add(colSelect);
+
             dgvData.Columns.Add("EmpCode", "Emp Code");
             dgvData.Columns.Add("EmpName", "Employee Name");
+            dgvData.Columns.Add("Gender", "Gender");
             dgvData.Columns.Add("Dept", "Department");
             dgvData.Columns.Add("LeaveType", "Leave Type");
-            dgvData.Columns.Add("Base", "Base");
-            dgvData.Columns.Add("Carried", "Carried");
+            dgvData.Columns.Add("Base", "Base Quota");
+            dgvData.Columns.Add("Carried", "Carry Over");
             dgvData.Columns.Add("Bonus", "Tenure Bonus");
-            dgvData.Columns.Add("Total", "Allocated");
-            dgvData.Columns.Add("Used", "Taken");
+            dgvData.Columns.Add("Total", "Total Allocated");
+            dgvData.Columns.Add("Used", "Used");
             dgvData.Columns.Add("Balance", "Balance");
-            dgvData.Columns.Add("Rate", "Utilization %");
+            dgvData.Columns.Add("Utilization", "Utilization %");
+
+            dgvData.ReadOnly = false;
+            foreach (DataGridViewColumn col in dgvData.Columns)
+            {
+                col.ReadOnly = (col.Name != "colSelect");
+            }
 
             string search = txtSearch.Text.Trim().ToLowerInvariant();
-            string typeFilter = cboFilter1.SelectedItem?.ToString() ?? "All Leave Types";
+            string deptFilter = cboFilter1.SelectedItem?.ToString() ?? "All Departments";
+            string genderFilter = cboFilter2.SelectedItem?.ToString() ?? "All Genders";
+            string typeFilter = cboFilter3.SelectedItem?.ToString() ?? "All Leave Types";
+
+            var distinctStaffIds = new HashSet<int>();
+            int sumAllocated = 0;
+            int sumUsed = 0;
+            int sumBalance = 0;
 
             foreach (var ent in DataStore.Instance.Entitlements)
             {
                 var emp = DataStore.Instance.Employees.FirstOrDefault(e => e.Id == ent.EmployeeId);
                 var lt = DataStore.Instance.LeaveTypes.FirstOrDefault(l => l.Id == ent.LeaveTypeId);
 
+                if (deptFilter != "All Departments" && emp?.DepartmentName != deptFilter) continue;
+                if (genderFilter != "All Genders" && emp?.Gender.ToString() != genderFilter) continue;
                 if (typeFilter != "All Leave Types" && lt?.Name != typeFilter) continue;
 
                 string empCode = emp?.EmployeeCode ?? "N/A";
                 string empName = emp?.FullName ?? "N/A";
+                string gender = emp?.Gender.ToString() ?? "N/A";
                 string deptName = emp?.DepartmentName ?? "N/A";
                 string typeName = lt?.Name ?? "N/A";
 
@@ -1520,14 +2171,115 @@ namespace ELMS.Forms
                 {
                     bool match = empCode.ToLowerInvariant().Contains(search) ||
                                  empName.ToLowerInvariant().Contains(search) ||
-                                 deptName.ToLowerInvariant().Contains(search);
+                                 gender.ToLowerInvariant().Contains(search) ||
+                                 deptName.ToLowerInvariant().Contains(search) ||
+                                 typeName.ToLowerInvariant().Contains(search);
                     if (!match) continue;
                 }
 
+                if (emp != null) distinctStaffIds.Add(emp.Id);
+                sumAllocated += ent.TotalAllocatedDays;
+                sumUsed += ent.UsedDays;
+                sumBalance += ent.BalanceDays;
+
                 dgvData.Rows.Add(
-                    empCode, empName, deptName, typeName, ent.BaseDays, ent.CarriedOverDays,
-                    $"+{ent.TenureBonusDays}", ent.TotalAllocatedDays, ent.UsedDays, ent.BalanceDays, $"{ent.UtilizationRate}%"
+                    false,
+                    empCode,
+                    empName,
+                    gender,
+                    deptName,
+                    typeName,
+                    ent.BaseDays,
+                    ent.CarriedOverDays,
+                    $"+{ent.TenureBonusDays}",
+                    ent.TotalAllocatedDays,
+                    ent.UsedDays,
+                    ent.BalanceDays,
+                    $"{ent.UtilizationRate:0.0}%"
                 );
+            }
+
+            _reportTotalStaff = distinctStaffIds.Count;
+            _reportTotalAllocated = sumAllocated;
+            _reportTotalUsed = sumUsed;
+            _reportTotalBalance = sumBalance;
+            _reportAvgUtil = sumAllocated > 0 ? ((double)sumUsed / sumAllocated * 100.0) : 0.0;
+
+            lblReportKpiStaff.Text = $"👥 Staff: {_reportTotalStaff}";
+            lblReportKpiAllocated.Text = $"📊 Quota: {_reportTotalAllocated}d";
+            lblReportKpiUsed.Text = $"🌴 Taken: {_reportTotalUsed}d";
+            lblReportKpiBalance.Text = $"⚖️ Balance: {_reportTotalBalance}d";
+            lblReportKpiUtil.Text = $"📈 Util: {_reportAvgUtil:0.0}%";
+
+            UpdateLedgerSelectionCount();
+        }
+
+        private void UpdateLedgerSelectionCount()
+        {
+            int totalRows = dgvData.Rows.Count;
+            int checkedCount = 0;
+            foreach (DataGridViewRow row in dgvData.Rows)
+            {
+                if (row.Cells["colSelect"]?.Value is true)
+                {
+                    checkedCount++;
+                }
+            }
+
+            if (checkedCount > 0)
+            {
+                lblReportSelectedCount.Text = $"{checkedCount} of {totalRows} selected (generating for checked only)";
+                lblReportSelectedCount.ForeColor = Color.FromArgb(234, 88, 12);
+            }
+            else
+            {
+                lblReportSelectedCount.Text = $"0 of {totalRows} selected (generating for all filtered)";
+                lblReportSelectedCount.ForeColor = Color.FromArgb(100, 116, 139);
+            }
+
+            btnToggleSelectAll.Text = (checkedCount == totalRows && totalRows > 0) ? "☐ Deselect All" : "☑ Select All";
+        }
+
+        private void btnToggleSelectAll_Click(object? sender, EventArgs e)
+        {
+            if (_currentView != ActiveView.Ledger) return;
+
+            bool selectAll = (btnToggleSelectAll.Text == "☑ Select All");
+            foreach (DataGridViewRow row in dgvData.Rows)
+            {
+                if (row.Cells["colSelect"] != null)
+                {
+                    row.Cells["colSelect"].Value = selectAll;
+                }
+            }
+            dgvData.EndEdit();
+            UpdateLedgerSelectionCount();
+        }
+
+        private void pnlReportMetrics_Paint(object? sender, PaintEventArgs e)
+        {
+            using (var pen = new Pen(Color.FromArgb(226, 232, 240), 1))
+            {
+                e.Graphics.DrawLine(pen, 0, pnlReportMetrics.Height - 1, pnlReportMetrics.Width, pnlReportMetrics.Height - 1);
+            }
+        }
+
+        private void dgvData_CurrentCellDirtyStateChanged(object? sender, EventArgs e)
+        {
+            if (dgvData.IsCurrentCellDirty && dgvData.CurrentCell is DataGridViewCheckBoxCell)
+            {
+                dgvData.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void dgvData_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
+        {
+            if (_currentView == ActiveView.Ledger && e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            {
+                if (dgvData.Columns[e.ColumnIndex].Name == "colSelect")
+                {
+                    UpdateLedgerSelectionCount();
+                }
             }
         }
 
@@ -1548,6 +2300,13 @@ namespace ELMS.Forms
                 else if (_currentLeaveSubTab == LeaveSubTab.Types && dgvData.Rows[e.RowIndex].Tag is LeaveType lt)
                 {
                     ShowLeaveTypeActionMenu(lt, e.RowIndex, e.ColumnIndex);
+                }
+            }
+            else if (_currentView == ActiveView.Approvals && dgvData.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                if (dgvData.Rows[e.RowIndex].Tag is LeaveRequest appReq)
+                {
+                    ShowLeaveApprovalActionMenu(appReq, e.RowIndex, e.ColumnIndex);
                 }
             }
             else if (_currentView == ActiveView.Employees && dgvData.Columns[e.ColumnIndex].Name == "Actions")
@@ -1576,6 +2335,21 @@ namespace ELMS.Forms
                 if (dgvData.Rows[e.RowIndex].Tag is LeaveRequest clrReq)
                 {
                     ShowClearanceActionMenu(clrReq, e.RowIndex, e.ColumnIndex);
+                }
+            }
+            else if (_currentView == ActiveView.Configurations && dgvData.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                if (_currentConfigSubTab == ConfigSubTab.Clearance && dgvData.Rows[e.RowIndex].Tag is ClearancePolicy cp)
+                {
+                    ShowClearancePolicyActionMenu(cp, e.RowIndex, e.ColumnIndex);
+                }
+                else if (_currentConfigSubTab == ConfigSubTab.Leave && dgvData.Rows[e.RowIndex].Tag is LeaveType lt)
+                {
+                    ShowLeaveTypeActionMenu(lt, e.RowIndex, e.ColumnIndex);
+                }
+                else if (_currentConfigSubTab == ConfigSubTab.Approval && dgvData.Rows[e.RowIndex].Tag is ApprovalWorkflowDefinition wf)
+                {
+                    ShowApprovalWorkflowActionMenu(wf, e.RowIndex, e.ColumnIndex);
                 }
             }
         }
@@ -1662,9 +2436,86 @@ namespace ELMS.Forms
                     }
                 }
             }
+            else if (_currentView == ActiveView.Configurations)
+            {
+                if (_currentConfigSubTab == ConfigSubTab.Clearance)
+                {
+                    using (var dlg = new ClearancePolicyDialog())
+                    {
+                        if (dlg.ShowDialog(this) == DialogResult.OK)
+                        {
+                            LoadClearanceConfigSubGrid();
+                        }
+                    }
+                }
+                else if (_currentConfigSubTab == ConfigSubTab.Leave)
+                {
+                    using (var dlg = new LeaveTypeDialog())
+                    {
+                        if (dlg.ShowDialog(this) == DialogResult.OK)
+                        {
+                            LoadLeaveConfigSubGrid();
+                        }
+                    }
+                }
+                else if (_currentConfigSubTab == ConfigSubTab.Approval)
+                {
+                    using (var dlg = new ApprovalWorkflowDialog())
+                    {
+                        if (dlg.ShowDialog(this) == DialogResult.OK)
+                        {
+                            LoadApprovalConfigSubGrid();
+                        }
+                    }
+                }
+            }
             else if (_currentView == ActiveView.Ledger)
             {
-                CsvExporter.ExportGridToCsv(dgvData, "Leave_Quota_Ledger.csv");
+                bool hasChecked = false;
+                foreach (DataGridViewRow row in dgvData.Rows)
+                {
+                    if (row.Cells["colSelect"]?.Value is true)
+                    {
+                        hasChecked = true;
+                        break;
+                    }
+                }
+
+                ReportExporter.ExportToExcel(dgvData, "Leave_Summary_Report_2026.csv", checkedOnly: hasChecked);
+            }
+        }
+
+        private void btnSecondaryAction_Click(object? sender, EventArgs e)
+        {
+            if (_currentView == ActiveView.Ledger)
+            {
+                bool hasChecked = false;
+                foreach (DataGridViewRow row in dgvData.Rows)
+                {
+                    if (row.Cells["colSelect"]?.Value is true)
+                    {
+                        hasChecked = true;
+                        break;
+                    }
+                }
+
+                string filterDept = cboFilter1.SelectedItem?.ToString() ?? "All Departments";
+                string filterGender = cboFilter2.SelectedItem?.ToString() ?? "All Genders";
+                string filterType = cboFilter3.SelectedItem?.ToString() ?? "All Leave Types";
+                string filterSummary = $"Dept: {filterDept} | Gender: {filterGender} | Leave Type: {filterType}";
+
+                ReportExporter.ExportToPdfHtml(
+                    dgvData,
+                    "Leave Summary & Quota Analytics Report",
+                    "Leave_Summary_Report_2026.html",
+                    checkedOnly: hasChecked,
+                    filterSummary: filterSummary,
+                    totalStaff: _reportTotalStaff,
+                    totalAllocated: _reportTotalAllocated,
+                    totalUsed: _reportTotalUsed,
+                    totalBalance: _reportTotalBalance,
+                    avgUtilization: _reportAvgUtil
+                );
             }
         }
 
@@ -2052,17 +2903,25 @@ private void ShowDepartmentActionMenu(Department dept, int rowIndex, int colInde
             int gap = 12;
             int cardW = Math.Max(180, (totalW - (gap * 3)) / 4);
 
-            c1.Location = new Point(0, 0);
-            c1.Size = new Size(cardW, 96);
+            Panel[] cards = { c1, c2, c3, c4 };
+            for (int i = 0; i < cards.Length; i++)
+            {
+                var card = cards[i];
+                int w = (i == cards.Length - 1) ? Math.Max(cardW, totalW - (cardW + gap) * 3) : cardW;
+                card.Location = new Point((cardW + gap) * i, 0);
+                card.Size = new Size(w, 96);
 
-            c2.Location = new Point(cardW + gap, 0);
-            c2.Size = new Size(cardW, 96);
-
-            c3.Location = new Point((cardW + gap) * 2, 0);
-            c3.Size = new Size(cardW, 96);
-
-            c4.Location = new Point((cardW + gap) * 3, 0);
-            c4.Size = new Size(Math.Max(cardW, totalW - (cardW + gap) * 3), 96);
+                foreach (Control ctrl in card.Controls)
+                {
+                    if (ctrl is Label lbl)
+                    {
+                        lbl.AutoSize = false;
+                        lbl.Width = w - 16;
+                        lbl.Left = 8;
+                        lbl.TextAlign = ContentAlignment.MiddleCenter;
+                    }
+                }
+            }
         }
 
         private void pnlEmpContent_Resize(object sender, EventArgs e)
