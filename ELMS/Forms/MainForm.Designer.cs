@@ -650,7 +650,7 @@ namespace ELMS.Forms
             this.cardEmpKpi4.Location = new System.Drawing.Point(690, 0);
             this.cardEmpKpi4.Name = "cardEmpKpi4";
             this.cardEmpKpi4.Padding = new System.Windows.Forms.Padding(16, 14, 16, 14);
-            this.cardEmpKpi4.Size = new System.Drawing.Size(220, 96);
+            this.cardEmpKpi4.Size = new System.Drawing.Size(220, 98);
             this.cardEmpKpi4.TabIndex = 3;
             this.cardEmpKpi4.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -659,7 +659,7 @@ namespace ELMS.Forms
             this.lblEmpKpi4Sub.AutoSize = true;
             this.lblEmpKpi4Sub.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblEmpKpi4Sub.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblEmpKpi4Sub.Location = new System.Drawing.Point(16, 68);
+            this.lblEmpKpi4Sub.Location = new System.Drawing.Point(16, 73);
             this.lblEmpKpi4Sub.Name = "lblEmpKpi4Sub";
             this.lblEmpKpi4Sub.Size = new System.Drawing.Size(107, 19);
             this.lblEmpKpi4Sub.TabIndex = 2;
@@ -670,7 +670,7 @@ namespace ELMS.Forms
             this.lblEmpKpi4Val.AutoSize = true;
             this.lblEmpKpi4Val.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblEmpKpi4Val.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.lblEmpKpi4Val.Location = new System.Drawing.Point(14, 30);
+            this.lblEmpKpi4Val.Location = new System.Drawing.Point(14, 27);
             this.lblEmpKpi4Val.Name = "lblEmpKpi4Val";
             this.lblEmpKpi4Val.Size = new System.Drawing.Size(39, 46);
             this.lblEmpKpi4Val.TabIndex = 1;
@@ -681,7 +681,7 @@ namespace ELMS.Forms
             this.lblEmpKpi4Title.AutoSize = true;
             this.lblEmpKpi4Title.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblEmpKpi4Title.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblEmpKpi4Title.Location = new System.Drawing.Point(16, 12);
+            this.lblEmpKpi4Title.Location = new System.Drawing.Point(16, 10);
             this.lblEmpKpi4Title.Name = "lblEmpKpi4Title";
             this.lblEmpKpi4Title.Size = new System.Drawing.Size(108, 20);
             this.lblEmpKpi4Title.TabIndex = 0;
@@ -696,7 +696,7 @@ namespace ELMS.Forms
             this.cardEmpKpi3.Location = new System.Drawing.Point(460, 0);
             this.cardEmpKpi3.Name = "cardEmpKpi3";
             this.cardEmpKpi3.Padding = new System.Windows.Forms.Padding(16, 14, 16, 14);
-            this.cardEmpKpi3.Size = new System.Drawing.Size(220, 96);
+            this.cardEmpKpi3.Size = new System.Drawing.Size(220, 98);
             this.cardEmpKpi3.TabIndex = 2;
             this.cardEmpKpi3.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -705,7 +705,7 @@ namespace ELMS.Forms
             this.lblEmpKpi3Sub.AutoSize = true;
             this.lblEmpKpi3Sub.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblEmpKpi3Sub.ForeColor = System.Drawing.Color.FromArgb(22, 163, 74);
-            this.lblEmpKpi3Sub.Location = new System.Drawing.Point(16, 68);
+            this.lblEmpKpi3Sub.Location = new System.Drawing.Point(16, 73);
             this.lblEmpKpi3Sub.Name = "lblEmpKpi3Sub";
             this.lblEmpKpi3Sub.Size = new System.Drawing.Size(117, 19);
             this.lblEmpKpi3Sub.TabIndex = 2;
@@ -716,7 +716,7 @@ namespace ELMS.Forms
             this.lblEmpKpi3Val.AutoSize = true;
             this.lblEmpKpi3Val.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblEmpKpi3Val.ForeColor = System.Drawing.Color.FromArgb(22, 163, 74);
-            this.lblEmpKpi3Val.Location = new System.Drawing.Point(14, 30);
+            this.lblEmpKpi3Val.Location = new System.Drawing.Point(14, 27);
             this.lblEmpKpi3Val.Name = "lblEmpKpi3Val";
             this.lblEmpKpi3Val.Size = new System.Drawing.Size(58, 46);
             this.lblEmpKpi3Val.TabIndex = 1;
@@ -727,7 +727,7 @@ namespace ELMS.Forms
             this.lblEmpKpi3Title.AutoSize = true;
             this.lblEmpKpi3Title.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblEmpKpi3Title.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblEmpKpi3Title.Location = new System.Drawing.Point(16, 12);
+            this.lblEmpKpi3Title.Location = new System.Drawing.Point(16, 10);
             this.lblEmpKpi3Title.Name = "lblEmpKpi3Title";
             this.lblEmpKpi3Title.Size = new System.Drawing.Size(118, 20);
             this.lblEmpKpi3Title.TabIndex = 0;
@@ -742,7 +742,7 @@ namespace ELMS.Forms
             this.cardEmpKpi2.Location = new System.Drawing.Point(230, 0);
             this.cardEmpKpi2.Name = "cardEmpKpi2";
             this.cardEmpKpi2.Padding = new System.Windows.Forms.Padding(16, 14, 16, 14);
-            this.cardEmpKpi2.Size = new System.Drawing.Size(220, 96);
+            this.cardEmpKpi2.Size = new System.Drawing.Size(220, 98);
             this.cardEmpKpi2.TabIndex = 1;
             this.cardEmpKpi2.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -751,7 +751,7 @@ namespace ELMS.Forms
             this.lblEmpKpi2Sub.AutoSize = true;
             this.lblEmpKpi2Sub.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblEmpKpi2Sub.ForeColor = System.Drawing.Color.FromArgb(37, 99, 235);
-            this.lblEmpKpi2Sub.Location = new System.Drawing.Point(16, 68);
+            this.lblEmpKpi2Sub.Location = new System.Drawing.Point(16, 73);
             this.lblEmpKpi2Sub.Name = "lblEmpKpi2Sub";
             this.lblEmpKpi2Sub.Size = new System.Drawing.Size(107, 19);
             this.lblEmpKpi2Sub.TabIndex = 2;
@@ -762,7 +762,7 @@ namespace ELMS.Forms
             this.lblEmpKpi2Val.AutoSize = true;
             this.lblEmpKpi2Val.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblEmpKpi2Val.ForeColor = System.Drawing.Color.FromArgb(37, 99, 235);
-            this.lblEmpKpi2Val.Location = new System.Drawing.Point(14, 30);
+            this.lblEmpKpi2Val.Location = new System.Drawing.Point(14, 27);
             this.lblEmpKpi2Val.Name = "lblEmpKpi2Val";
             this.lblEmpKpi2Val.Size = new System.Drawing.Size(58, 46);
             this.lblEmpKpi2Val.TabIndex = 1;
@@ -773,7 +773,7 @@ namespace ELMS.Forms
             this.lblEmpKpi2Title.AutoSize = true;
             this.lblEmpKpi2Title.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblEmpKpi2Title.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblEmpKpi2Title.Location = new System.Drawing.Point(16, 12);
+            this.lblEmpKpi2Title.Location = new System.Drawing.Point(16, 10);
             this.lblEmpKpi2Title.Name = "lblEmpKpi2Title";
             this.lblEmpKpi2Title.Size = new System.Drawing.Size(147, 20);
             this.lblEmpKpi2Title.TabIndex = 0;
@@ -788,7 +788,7 @@ namespace ELMS.Forms
             this.cardEmpKpi1.Location = new System.Drawing.Point(0, 0);
             this.cardEmpKpi1.Name = "cardEmpKpi1";
             this.cardEmpKpi1.Padding = new System.Windows.Forms.Padding(16, 14, 16, 14);
-            this.cardEmpKpi1.Size = new System.Drawing.Size(220, 96);
+            this.cardEmpKpi1.Size = new System.Drawing.Size(220, 98);
             this.cardEmpKpi1.TabIndex = 0;
             this.cardEmpKpi1.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -797,7 +797,7 @@ namespace ELMS.Forms
             this.lblEmpKpi1Sub.AutoSize = true;
             this.lblEmpKpi1Sub.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblEmpKpi1Sub.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblEmpKpi1Sub.Location = new System.Drawing.Point(16, 68);
+            this.lblEmpKpi1Sub.Location = new System.Drawing.Point(16, 73);
             this.lblEmpKpi1Sub.Name = "lblEmpKpi1Sub";
             this.lblEmpKpi1Sub.Size = new System.Drawing.Size(126, 19);
             this.lblEmpKpi1Sub.TabIndex = 2;
@@ -808,7 +808,7 @@ namespace ELMS.Forms
             this.lblEmpKpi1Val.AutoSize = true;
             this.lblEmpKpi1Val.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblEmpKpi1Val.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.lblEmpKpi1Val.Location = new System.Drawing.Point(14, 30);
+            this.lblEmpKpi1Val.Location = new System.Drawing.Point(14, 27);
             this.lblEmpKpi1Val.Name = "lblEmpKpi1Val";
             this.lblEmpKpi1Val.Size = new System.Drawing.Size(58, 46);
             this.lblEmpKpi1Val.TabIndex = 1;
@@ -819,7 +819,7 @@ namespace ELMS.Forms
             this.lblEmpKpi1Title.AutoSize = true;
             this.lblEmpKpi1Title.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblEmpKpi1Title.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblEmpKpi1Title.Location = new System.Drawing.Point(16, 12);
+            this.lblEmpKpi1Title.Location = new System.Drawing.Point(16, 10);
             this.lblEmpKpi1Title.Name = "lblEmpKpi1Title";
             this.lblEmpKpi1Title.Size = new System.Drawing.Size(147, 20);
             this.lblEmpKpi1Title.TabIndex = 0;
@@ -907,7 +907,7 @@ namespace ELMS.Forms
             this.cardLeaveKpi4.Location = new System.Drawing.Point(690, 0);
             this.cardLeaveKpi4.Name = "cardLeaveKpi4";
             this.cardLeaveKpi4.Padding = new System.Windows.Forms.Padding(16, 14, 16, 14);
-            this.cardLeaveKpi4.Size = new System.Drawing.Size(220, 96);
+            this.cardLeaveKpi4.Size = new System.Drawing.Size(220, 98);
             this.cardLeaveKpi4.TabIndex = 3;
             this.cardLeaveKpi4.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -916,7 +916,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi4Sub.AutoSize = true;
             this.lblLeaveKpi4Sub.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblLeaveKpi4Sub.ForeColor = System.Drawing.Color.FromArgb(22, 163, 74);
-            this.lblLeaveKpi4Sub.Location = new System.Drawing.Point(16, 68);
+            this.lblLeaveKpi4Sub.Location = new System.Drawing.Point(16, 73);
             this.lblLeaveKpi4Sub.Name = "lblLeaveKpi4Sub";
             this.lblLeaveKpi4Sub.Size = new System.Drawing.Size(104, 19);
             this.lblLeaveKpi4Sub.TabIndex = 2;
@@ -927,7 +927,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi4Val.AutoSize = true;
             this.lblLeaveKpi4Val.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblLeaveKpi4Val.ForeColor = System.Drawing.Color.FromArgb(22, 163, 74);
-            this.lblLeaveKpi4Val.Location = new System.Drawing.Point(14, 30);
+            this.lblLeaveKpi4Val.Location = new System.Drawing.Point(14, 27);
             this.lblLeaveKpi4Val.Name = "lblLeaveKpi4Val";
             this.lblLeaveKpi4Val.Size = new System.Drawing.Size(39, 46);
             this.lblLeaveKpi4Val.TabIndex = 1;
@@ -938,7 +938,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi4Title.AutoSize = true;
             this.lblLeaveKpi4Title.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblLeaveKpi4Title.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblLeaveKpi4Title.Location = new System.Drawing.Point(16, 12);
+            this.lblLeaveKpi4Title.Location = new System.Drawing.Point(16, 10);
             this.lblLeaveKpi4Title.Name = "lblLeaveKpi4Title";
             this.lblLeaveKpi4Title.Size = new System.Drawing.Size(126, 20);
             this.lblLeaveKpi4Title.TabIndex = 0;
@@ -953,7 +953,7 @@ namespace ELMS.Forms
             this.cardLeaveKpi3.Location = new System.Drawing.Point(460, 0);
             this.cardLeaveKpi3.Name = "cardLeaveKpi3";
             this.cardLeaveKpi3.Padding = new System.Windows.Forms.Padding(16, 14, 16, 14);
-            this.cardLeaveKpi3.Size = new System.Drawing.Size(220, 96);
+            this.cardLeaveKpi3.Size = new System.Drawing.Size(220, 98);
             this.cardLeaveKpi3.TabIndex = 2;
             this.cardLeaveKpi3.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -962,7 +962,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi3Sub.AutoSize = true;
             this.lblLeaveKpi3Sub.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblLeaveKpi3Sub.ForeColor = System.Drawing.Color.FromArgb(37, 99, 235);
-            this.lblLeaveKpi3Sub.Location = new System.Drawing.Point(16, 68);
+            this.lblLeaveKpi3Sub.Location = new System.Drawing.Point(16, 73);
             this.lblLeaveKpi3Sub.Name = "lblLeaveKpi3Sub";
             this.lblLeaveKpi3Sub.Size = new System.Drawing.Size(117, 19);
             this.lblLeaveKpi3Sub.TabIndex = 2;
@@ -973,7 +973,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi3Val.AutoSize = true;
             this.lblLeaveKpi3Val.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblLeaveKpi3Val.ForeColor = System.Drawing.Color.FromArgb(37, 99, 235);
-            this.lblLeaveKpi3Val.Location = new System.Drawing.Point(14, 30);
+            this.lblLeaveKpi3Val.Location = new System.Drawing.Point(14, 27);
             this.lblLeaveKpi3Val.Name = "lblLeaveKpi3Val";
             this.lblLeaveKpi3Val.Size = new System.Drawing.Size(39, 46);
             this.lblLeaveKpi3Val.TabIndex = 1;
@@ -984,7 +984,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi3Title.AutoSize = true;
             this.lblLeaveKpi3Title.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblLeaveKpi3Title.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblLeaveKpi3Title.Location = new System.Drawing.Point(16, 12);
+            this.lblLeaveKpi3Title.Location = new System.Drawing.Point(16, 10);
             this.lblLeaveKpi3Title.Name = "lblLeaveKpi3Title";
             this.lblLeaveKpi3Title.Size = new System.Drawing.Size(107, 20);
             this.lblLeaveKpi3Title.TabIndex = 0;
@@ -999,7 +999,7 @@ namespace ELMS.Forms
             this.cardLeaveKpi2.Location = new System.Drawing.Point(230, 0);
             this.cardLeaveKpi2.Name = "cardLeaveKpi2";
             this.cardLeaveKpi2.Padding = new System.Windows.Forms.Padding(16, 14, 16, 14);
-            this.cardLeaveKpi2.Size = new System.Drawing.Size(220, 96);
+            this.cardLeaveKpi2.Size = new System.Drawing.Size(220, 98);
             this.cardLeaveKpi2.TabIndex = 1;
             this.cardLeaveKpi2.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -1008,7 +1008,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi2Sub.AutoSize = true;
             this.lblLeaveKpi2Sub.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblLeaveKpi2Sub.ForeColor = System.Drawing.Color.FromArgb(234, 88, 12);
-            this.lblLeaveKpi2Sub.Location = new System.Drawing.Point(16, 68);
+            this.lblLeaveKpi2Sub.Location = new System.Drawing.Point(16, 73);
             this.lblLeaveKpi2Sub.Name = "lblLeaveKpi2Sub";
             this.lblLeaveKpi2Sub.Size = new System.Drawing.Size(117, 19);
             this.lblLeaveKpi2Sub.TabIndex = 2;
@@ -1019,7 +1019,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi2Val.AutoSize = true;
             this.lblLeaveKpi2Val.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblLeaveKpi2Val.ForeColor = System.Drawing.Color.FromArgb(234, 88, 12);
-            this.lblLeaveKpi2Val.Location = new System.Drawing.Point(14, 30);
+            this.lblLeaveKpi2Val.Location = new System.Drawing.Point(14, 27);
             this.lblLeaveKpi2Val.Name = "lblLeaveKpi2Val";
             this.lblLeaveKpi2Val.Size = new System.Drawing.Size(39, 46);
             this.lblLeaveKpi2Val.TabIndex = 1;
@@ -1030,7 +1030,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi2Title.AutoSize = true;
             this.lblLeaveKpi2Title.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblLeaveKpi2Title.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblLeaveKpi2Title.Location = new System.Drawing.Point(16, 12);
+            this.lblLeaveKpi2Title.Location = new System.Drawing.Point(16, 10);
             this.lblLeaveKpi2Title.Name = "lblLeaveKpi2Title";
             this.lblLeaveKpi2Title.Size = new System.Drawing.Size(126, 20);
             this.lblLeaveKpi2Title.TabIndex = 0;
@@ -1045,7 +1045,7 @@ namespace ELMS.Forms
             this.cardLeaveKpi1.Location = new System.Drawing.Point(0, 0);
             this.cardLeaveKpi1.Name = "cardLeaveKpi1";
             this.cardLeaveKpi1.Padding = new System.Windows.Forms.Padding(16, 14, 16, 14);
-            this.cardLeaveKpi1.Size = new System.Drawing.Size(220, 96);
+            this.cardLeaveKpi1.Size = new System.Drawing.Size(220, 98);
             this.cardLeaveKpi1.TabIndex = 0;
             this.cardLeaveKpi1.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -1054,7 +1054,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi1Sub.AutoSize = true;
             this.lblLeaveKpi1Sub.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblLeaveKpi1Sub.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblLeaveKpi1Sub.Location = new System.Drawing.Point(16, 68);
+            this.lblLeaveKpi1Sub.Location = new System.Drawing.Point(16, 73);
             this.lblLeaveKpi1Sub.Name = "lblLeaveKpi1Sub";
             this.lblLeaveKpi1Sub.Size = new System.Drawing.Size(117, 19);
             this.lblLeaveKpi1Sub.TabIndex = 2;
@@ -1065,7 +1065,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi1Val.AutoSize = true;
             this.lblLeaveKpi1Val.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
             this.lblLeaveKpi1Val.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.lblLeaveKpi1Val.Location = new System.Drawing.Point(14, 30);
+            this.lblLeaveKpi1Val.Location = new System.Drawing.Point(14, 27);
             this.lblLeaveKpi1Val.Name = "lblLeaveKpi1Val";
             this.lblLeaveKpi1Val.Size = new System.Drawing.Size(39, 46);
             this.lblLeaveKpi1Val.TabIndex = 1;
@@ -1076,7 +1076,7 @@ namespace ELMS.Forms
             this.lblLeaveKpi1Title.AutoSize = true;
             this.lblLeaveKpi1Title.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblLeaveKpi1Title.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblLeaveKpi1Title.Location = new System.Drawing.Point(16, 12);
+            this.lblLeaveKpi1Title.Location = new System.Drawing.Point(16, 10);
             this.lblLeaveKpi1Title.Name = "lblLeaveKpi1Title";
             this.lblLeaveKpi1Title.Size = new System.Drawing.Size(123, 20);
             this.lblLeaveKpi1Title.TabIndex = 0;

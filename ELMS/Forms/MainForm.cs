@@ -57,6 +57,16 @@ namespace ELMS.Forms
 
             pnlUserCard.MouseEnter += (s, e) => pnlUserCard.BackColor = Color.FromArgb(241, 245, 249);
             pnlUserCard.MouseLeave += (s, e) => pnlUserCard.BackColor = Color.FromArgb(248, 250, 252);
+
+            lblLeaveKpi1Val.BringToFront();
+            lblLeaveKpi2Val.BringToFront();
+            lblLeaveKpi3Val.BringToFront();
+            lblLeaveKpi4Val.BringToFront();
+
+            lblEmpKpi1Val.BringToFront();
+            lblEmpKpi2Val.BringToFront();
+            lblEmpKpi3Val.BringToFront();
+            lblEmpKpi4Val.BringToFront();
         }
 
         private void SetupNavHover(Button btn)
@@ -467,22 +477,32 @@ namespace ELMS.Forms
             int approved = reqs.Count(r => r.Status == RequestStatus.APPROVED);
             int pending = reqs.Count(r => r.Status == RequestStatus.SUBMITTED || r.Status == RequestStatus.UNDER_REVIEW);
             int clearance = reqs.Count(r => r.Status == RequestStatus.CLEARANCE_IN_PROGRESS);
+            int draft = reqs.Count(r => r.Status == RequestStatus.DRAFT);
             int rejected = reqs.Count(r => r.Status == RequestStatus.REJECTED);
-
-            int safeTotal = Math.Max(1, total);
+            int cancelled = reqs.Count(r => r.Status == RequestStatus.CANCELLED);
 
             int chartSize = Math.Min(220, pnlPieContainer.ClientSize.Height - 110);
             int chartX = (pnlPieContainer.ClientSize.Width - chartSize) / 2;
             int chartY = 20;
             Rectangle pieRect = new Rectangle(chartX, chartY, chartSize, chartSize);
 
-            var segments = new[]
+            var segList = new List<dynamic>
             {
                 new { Label = "Approved", Count = approved, Color = Color.FromArgb(22, 163, 74) },
                 new { Label = "Under Review", Count = pending, Color = Color.FromArgb(234, 88, 12) },
                 new { Label = "In Clearance", Count = clearance, Color = Color.FromArgb(37, 99, 235) },
+                new { Label = "Draft", Count = draft, Color = Color.FromArgb(100, 116, 139) },
                 new { Label = "Rejected", Count = rejected, Color = Color.FromArgb(220, 38, 38) }
             };
+
+            if (cancelled > 0)
+            {
+                segList.Add(new { Label = "Cancelled", Count = cancelled, Color = Color.FromArgb(148, 163, 184) });
+            }
+
+            var segments = segList.ToArray();
+            int totalSegs = segments.Sum(s => (int)s.Count);
+            int safeTotal = Math.Max(1, totalSegs);
 
             float startAngle = -90f;
             float[] startAngles = new float[segments.Length];
@@ -518,6 +538,8 @@ namespace ELMS.Forms
 
                 for (int i = 0; i < geo.segments.Length; i++)
                 {
+                    if (geo.sweepAngles[i] <= 0) continue;
+
                     double sAngle = (geo.startAngles[i] + 90 + 360) % 360;
                     double eAngle = sAngle + geo.sweepAngles[i];
 
@@ -550,8 +572,18 @@ namespace ELMS.Forms
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
             var geo = GetPieGeometry();
-            int total = Math.Max(1, DataStore.Instance.LeaveRequests.Count);
+            int actualTotal = DataStore.Instance.LeaveRequests.Count;
+            int total = Math.Max(1, actualTotal);
 
+            // 1. Draw circular base background and distinct border so the pie chart outline is always clearly visible against white background
+            using (var baseBrush = new SolidBrush(Color.FromArgb(248, 250, 252)))
+            using (var baseBorderPen = new Pen(Color.FromArgb(203, 213, 225), 2f))
+            {
+                e.Graphics.FillEllipse(baseBrush, geo.pieRect);
+                e.Graphics.DrawEllipse(baseBorderPen, geo.pieRect);
+            }
+
+            // 2. Draw pie slices
             for (int i = 0; i < geo.segments.Length; i++)
             {
                 if (geo.sweepAngles[i] <= 0) continue;
@@ -572,13 +604,34 @@ namespace ELMS.Forms
                     e.Graphics.FillPie(brush, drawRect, geo.startAngles[i], geo.sweepAngles[i]);
                 }
 
-                using (var pen = new Pen(Color.White, 2))
+                using (var pen = new Pen(Color.White, 2f))
                 {
                     e.Graphics.DrawPie(pen, drawRect, geo.startAngles[i], geo.sweepAngles[i]);
                 }
             }
 
-            if (_hoveredPieSlice >= 0 && _hoveredPieSlice < geo.segments.Length)
+            // 3. Draw distinct outer circle border on top of slices for clean framing
+            using (var outerBorderPen = new Pen(Color.FromArgb(203, 213, 225), 2f))
+            {
+                e.Graphics.DrawEllipse(outerBorderPen, geo.pieRect);
+            }
+
+            // If empty, draw "No Requests"
+            if (actualTotal == 0)
+            {
+                using (var emptyFont = new Font("Segoe UI", 9.5f, FontStyle.Regular))
+                using (var emptyBrush = new SolidBrush(Color.FromArgb(148, 163, 184)))
+                {
+                    string emptyText = "No Requests";
+                    var sz = e.Graphics.MeasureString(emptyText, emptyFont);
+                    float ex = geo.pieRect.X + (geo.pieRect.Width - sz.Width) / 2;
+                    float ey = geo.pieRect.Y + (geo.pieRect.Height - sz.Height) / 2;
+                    e.Graphics.DrawString(emptyText, emptyFont, emptyBrush, ex, ey);
+                }
+            }
+
+            // 4. Hover Tooltip
+            if (_hoveredPieSlice >= 0 && _hoveredPieSlice < geo.segments.Length && geo.segments[_hoveredPieSlice].Count > 0)
             {
                 var hSeg = geo.segments[_hoveredPieSlice];
                 double hPct = ((double)hSeg.Count / total) * 100.0;
@@ -597,7 +650,7 @@ namespace ELMS.Forms
                 }
             }
 
-            // Legend HORIZONTALLY BELOW the chart (Never on the right side)
+            // 5. Legend HORIZONTALLY BELOW the chart (Never on the right side)
             int legendY = geo.pieRect.Bottom + 35;
             int totalLegW = 0;
             string[] legTexts = new string[geo.segments.Length];
@@ -608,7 +661,7 @@ namespace ELMS.Forms
                 for (int i = 0; i < geo.segments.Length; i++)
                 {
                     var seg = geo.segments[i];
-                    double pct = ((double)seg.Count / total) * 100.0;
+                    double pct = actualTotal > 0 ? (((double)seg.Count / actualTotal) * 100.0) : 0.0;
                     legTexts[i] = $"{seg.Label}: {seg.Count} ({pct:F1}%)";
                     var sz = TextRenderer.MeasureText(legTexts[i], fontLeg);
                     textSizes[i] = sz;
@@ -627,9 +680,20 @@ namespace ELMS.Forms
                     var seg = geo.segments[i];
                     bool isHover = (i == _hoveredPieSlice);
 
+                    // Wrap line if tight on smaller viewports
+                    if (curLegX + textSizes[i].Width + 36 > pnlPieContainer.ClientSize.Width - 10 && curLegX > 20)
+                    {
+                        curLegX = 20;
+                        legendY += 24;
+                    }
+
                     using (var bulletBrush = new SolidBrush(seg.Color))
                     {
                         e.Graphics.FillEllipse(bulletBrush, curLegX, legendY + 4, 10, 10);
+                        using (var bulletBorder = new Pen(Color.FromArgb(203, 213, 225), 1f))
+                        {
+                            e.Graphics.DrawEllipse(bulletBorder, curLegX, legendY + 4, 10, 10);
+                        }
                     }
 
                     var fontToUse = isHover ? fontBold : fontLeg;
@@ -1857,16 +1921,16 @@ private void ShowDepartmentActionMenu(Department dept, int rowIndex, int colInde
             int cardW = Math.Max(180, (totalW - (gap * 3)) / 4);
 
             c1.Location = new Point(0, 0);
-            c1.Size = new Size(cardW, 96);
+            c1.Size = new Size(cardW, 98);
 
             c2.Location = new Point(cardW + gap, 0);
-            c2.Size = new Size(cardW, 96);
+            c2.Size = new Size(cardW, 98);
 
             c3.Location = new Point((cardW + gap) * 2, 0);
-            c3.Size = new Size(cardW, 96);
+            c3.Size = new Size(cardW, 98);
 
             c4.Location = new Point((cardW + gap) * 3, 0);
-            c4.Size = new Size(Math.Max(cardW, totalW - (cardW + gap) * 3), 96);
+            c4.Size = new Size(Math.Max(cardW, totalW - (cardW + gap) * 3), 98);
         }
 
         private void pnlEmpContent_Resize(object sender, EventArgs e)
