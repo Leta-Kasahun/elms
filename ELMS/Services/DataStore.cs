@@ -311,14 +311,58 @@ namespace ELMS.Services
                 EmployeeId = emp3.Id,
                 LeaveTypeId = ltStudy.Id,
                 StartDate = DateTime.Today.AddDays(25),
-                EndDate = DateTime.Today.AddDays(55),
-                Status = RequestStatus.DRAFT,
+                EndDate = DateTime.Today.AddDays(70),
+                Status = RequestStatus.CLEARANCE_IN_PROGRESS,
                 Reason = "Master of Science in Software Engineering semester coursework",
                 RequiresClearance = true,
-                CreatedAt = DateTime.Now.AddDays(-1)
+                CreatedAt = DateTime.Now.AddDays(-10),
+                SubmittedAt = DateTime.Now.AddDays(-9)
             };
+            r2.ApprovalSteps.Add(new WorkflowApprovalStep { Id = 3, LeaveRequestId = 2, StepOrder = 1, StepName = "Department Head Review", RequiredRole = SystemRole.Department_Head, Status = StepStatus.APPROVED, ApproverName = "Grace Hopper", ActionDate = DateTime.Now.AddDays(-7), Comments = "Approved for academic study semester." });
+            r2.ApprovalSteps.Add(new WorkflowApprovalStep { Id = 4, LeaveRequestId = 2, StepOrder = 2, StepName = "HR Director Authorization", RequiredRole = SystemRole.HR_Manager, Status = StepStatus.APPROVED, ApproverName = "Jane Smith", ActionDate = DateTime.Now.AddDays(-5), Comments = "Authorized. Sabbatical clearance required before final release." });
+            r2.ClearanceChecklist.Add(new ClearanceItem { Id = 1, LeaveRequestId = 2, ItemName = "Library & Academic Resources Handover", DepartmentOrUnit = "University Library", Status = ClearanceStatus.CLEARED, ClearedByName = "Rachel Adams", ClearedDate = DateTime.Now.AddDays(-2) });
+            r2.ClearanceChecklist.Add(new ClearanceItem { Id = 2, LeaveRequestId = 2, ItemName = "Department Hardware & Project Handover", DepartmentOrUnit = "Engineering", Status = ClearanceStatus.PENDING });
+            r2.ClearanceChecklist.Add(new ClearanceItem { Id = 3, LeaveRequestId = 2, ItemName = "Finance & Sabbatical Grant Clearance", DepartmentOrUnit = "Finance", Status = ClearanceStatus.PENDING });
 
-            LeaveRequests.AddRange(new[] { r1, r2 });
+            var r3 = new LeaveRequest
+            {
+                Id = 3,
+                RequestNumber = "LR-2026-003",
+                EmployeeId = emp5.Id,
+                LeaveTypeId = ltStudy.Id,
+                StartDate = DateTime.Today.AddDays(30),
+                EndDate = DateTime.Today.AddDays(90),
+                Status = RequestStatus.CLEARANCE_IN_PROGRESS,
+                Reason = "Doctoral research sabbatical and conference presentation",
+                RequiresClearance = true,
+                CreatedAt = DateTime.Now.AddDays(-8),
+                SubmittedAt = DateTime.Now.AddDays(-7)
+            };
+            r3.ApprovalSteps.Add(new WorkflowApprovalStep { Id = 5, LeaveRequestId = 3, StepOrder = 1, StepName = "Department Head Review", RequiredRole = SystemRole.Department_Head, Status = StepStatus.APPROVED, ApproverName = "Grace Hopper", ActionDate = DateTime.Now.AddDays(-6), Comments = "Approved by department." });
+            r3.ApprovalSteps.Add(new WorkflowApprovalStep { Id = 6, LeaveRequestId = 3, StepOrder = 2, StepName = "HR Director Authorization", RequiredRole = SystemRole.HR_Manager, Status = StepStatus.APPROVED, ApproverName = "Jane Smith", ActionDate = DateTime.Now.AddDays(-4), Comments = "Authorized for clearance processing." });
+            r3.ClearanceChecklist.Add(new ClearanceItem { Id = 4, LeaveRequestId = 3, ItemName = "Library & Academic Resources Handover", DepartmentOrUnit = "University Library", Status = ClearanceStatus.PENDING });
+            r3.ClearanceChecklist.Add(new ClearanceItem { Id = 5, LeaveRequestId = 3, ItemName = "Department Hardware & Lab Access Handover", DepartmentOrUnit = "Engineering", Status = ClearanceStatus.PENDING });
+
+            var r4 = new LeaveRequest
+            {
+                Id = 4,
+                RequestNumber = "LR-2026-004",
+                EmployeeId = emp4.Id,
+                LeaveTypeId = ltStudy.Id,
+                StartDate = DateTime.Today.AddDays(-15),
+                EndDate = DateTime.Today.AddDays(15),
+                Status = RequestStatus.APPROVED,
+                Reason = "Professional executive certification program",
+                RequiresClearance = true,
+                CreatedAt = DateTime.Now.AddDays(-30),
+                SubmittedAt = DateTime.Now.AddDays(-28)
+            };
+            r4.ApprovalSteps.Add(new WorkflowApprovalStep { Id = 7, LeaveRequestId = 4, StepOrder = 1, StepName = "Department Head Review", RequiredRole = SystemRole.Department_Head, Status = StepStatus.APPROVED, ApproverName = "Jane Smith", ActionDate = DateTime.Now.AddDays(-25), Comments = "Approved." });
+            r4.ApprovalSteps.Add(new WorkflowApprovalStep { Id = 8, LeaveRequestId = 4, StepOrder = 2, StepName = "HR Director Authorization", RequiredRole = SystemRole.HR_Manager, Status = StepStatus.APPROVED, ApproverName = "Jane Smith", ActionDate = DateTime.Now.AddDays(-22), Comments = "Approved." });
+            r4.ClearanceChecklist.Add(new ClearanceItem { Id = 6, LeaveRequestId = 4, ItemName = "Library & Academic Resources Handover", DepartmentOrUnit = "University Library", Status = ClearanceStatus.CLEARED, ClearedByName = "Rachel Adams", ClearedDate = DateTime.Now.AddDays(-20) });
+            r4.ClearanceChecklist.Add(new ClearanceItem { Id = 7, LeaveRequestId = 4, ItemName = "HR Compliance & Documentation Clearance", DepartmentOrUnit = "Human Resources", Status = ClearanceStatus.CLEARED, ClearedByName = "David Miller", ClearedDate = DateTime.Now.AddDays(-18) });
+
+            LeaveRequests.AddRange(new[] { r1, r2, r3, r4 });
             Roles.AddRange(new[]
             {
                 new Role

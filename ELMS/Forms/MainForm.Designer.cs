@@ -21,6 +21,7 @@ namespace ELMS.Forms
             this.pnlSidebar = new System.Windows.Forms.Panel();
             this.pnlSidebarNav = new System.Windows.Forms.Panel();
             this.btnNavRoles = new System.Windows.Forms.Button();
+            this.btnNavClearances = new System.Windows.Forms.Button();
             this.btnNavDepartments = new System.Windows.Forms.Button();
             this.btnNavLedger = new System.Windows.Forms.Button();
             this.btnNavEmployees = new System.Windows.Forms.Button();
@@ -156,6 +157,7 @@ namespace ELMS.Forms
             // pnlSidebarNav
             // 
             this.pnlSidebarNav.Controls.Add(this.btnNavLedger);
+            this.pnlSidebarNav.Controls.Add(this.btnNavClearances);
             this.pnlSidebarNav.Controls.Add(this.btnNavLeaves);
             this.pnlSidebarNav.Controls.Add(this.btnNavRoles);
             this.pnlSidebarNav.Controls.Add(this.btnNavDepartments);
@@ -235,6 +237,23 @@ namespace ELMS.Forms
             this.btnNavEmployees.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNavEmployees.UseVisualStyleBackColor = true;
             this.btnNavEmployees.Click += new System.EventHandler(this.btnNavEmployees_Click);
+            // 
+            // btnNavClearances
+            // 
+            this.btnNavClearances.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnNavClearances.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnNavClearances.FlatAppearance.BorderSize = 0;
+            this.btnNavClearances.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNavClearances.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.btnNavClearances.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
+            this.btnNavClearances.Location = new System.Drawing.Point(10, 182);
+            this.btnNavClearances.Name = "btnNavClearances";
+            this.btnNavClearances.Size = new System.Drawing.Size(210, 42);
+            this.btnNavClearances.TabIndex = 5;
+            this.btnNavClearances.Text = "Clearance Desk";
+            this.btnNavClearances.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnNavClearances.UseVisualStyleBackColor = true;
+            this.btnNavClearances.Click += new System.EventHandler(this.btnNavClearances_Click);
             // 
             // btnNavLeaves
             // 
@@ -1321,6 +1340,7 @@ namespace ELMS.Forms
         private System.Windows.Forms.Button btnNavEmployees;
         private System.Windows.Forms.Button btnNavDepartments;
         private System.Windows.Forms.Button btnNavRoles;
+        private System.Windows.Forms.Button btnNavClearances;
         private System.Windows.Forms.Button btnNavLedger;
         private System.Windows.Forms.Panel pnlSidebarBottom;
         private System.Windows.Forms.Panel pnlUserCard;

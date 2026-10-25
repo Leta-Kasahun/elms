@@ -18,6 +18,7 @@ namespace ELMS.Forms
             Employees,
             Departments,
             Roles,
+            Clearances,
             Ledger
         }
 
@@ -53,6 +54,7 @@ namespace ELMS.Forms
             SetupNavHover(btnNavLeaves);
             SetupNavHover(btnNavEmployees);
             SetupNavHover(btnNavRoles);
+            SetupNavHover(btnNavClearances);
             SetupNavHover(btnNavLedger);
 
             pnlUserCard.MouseEnter += (s, e) => pnlUserCard.BackColor = Color.FromArgb(241, 245, 249);
@@ -108,6 +110,7 @@ namespace ELMS.Forms
                 btnNavLeaves.Text = "L";
                 btnNavEmployees.Text = "E";
                 btnNavRoles.Text = "R";
+                btnNavClearances.Text = "C";
                 btnNavLedger.Text = "Q";
                 lblUserName.Visible = false;
                 lblUserRole.Visible = false;
@@ -121,7 +124,8 @@ namespace ELMS.Forms
                 btnNavDashboard.Text = "Dashboard";
                 btnNavLeaves.Text = "Leave Requests";
                 btnNavEmployees.Text = "Employees";
-                btnNavRoles.Text = "Roles";
+                btnNavRoles.Text = "User Roles";
+                btnNavClearances.Text = "Clearance Desk";
                 btnNavLedger.Text = "Quota Ledger";
                 lblUserName.Visible = true;
                 lblUserRole.Visible = true;
@@ -205,6 +209,12 @@ namespace ELMS.Forms
                     SetupRolesToolbar();
                     LoadRolesGrid();
                     break;
+                case ActiveView.Clearances:
+                    HighlightNav(btnNavClearances);
+                    lblBreadcrumb.Text = "Clearance Desk  /  Study Leave Clearances";
+                    SetupClearancesToolbar();
+                    LoadClearancesGrid();
+                    break;
                 case ActiveView.Ledger:
                     HighlightNav(btnNavLedger);
                     lblBreadcrumb.Text = "Quota Ledger  /  Balances";
@@ -216,7 +226,7 @@ namespace ELMS.Forms
 
         private void ResetNavButtons()
         {
-            foreach (var btn in new[] { btnNavDashboard, btnNavLeaves, btnNavEmployees, btnNavDepartments, btnNavRoles, btnNavLedger })
+            foreach (var btn in new[] { btnNavDashboard, btnNavLeaves, btnNavEmployees, btnNavDepartments, btnNavRoles, btnNavClearances, btnNavLedger })
             {
                 btn.BackColor = Color.Transparent;
                 btn.ForeColor = Color.FromArgb(71, 85, 105);
@@ -238,6 +248,7 @@ namespace ELMS.Forms
         private void btnNavEmployees_Click(object sender, EventArgs e) => SwitchView(ActiveView.Employees);
         private void btnNavDepartments_Click(object sender, EventArgs e) => SwitchView(ActiveView.Departments);
         private void btnNavRoles_Click(object sender, EventArgs e) => SwitchView(ActiveView.Roles);
+        private void btnNavClearances_Click(object sender, EventArgs e) => SwitchView(ActiveView.Clearances);
         private void btnNavLedger_Click(object sender, EventArgs e) => SwitchView(ActiveView.Ledger);
 
         private void btnTabEmployees_Click(object sender, EventArgs e) => ShowEmployeesTab();
@@ -1186,6 +1197,180 @@ namespace ELMS.Forms
             }
         }
 
+        private void SetupClearancesToolbar()
+        {
+            txtSearch.PlaceholderText = "Search employee, req #, or study leave...";
+            cboFilter1.Visible = true;
+            cboFilter1.Items.Clear();
+            cboFilter1.Items.AddRange(new object[] { "Pending Clearance", "Completed Clearance", "All Clearances" });
+            cboFilter1.SelectedIndex = 0;
+
+            bool canManage = AuthService.Instance.HasAnyRole(
+                SystemRole.Admin,
+                SystemRole.HR_Manager,
+                SystemRole.Department_Head,
+                SystemRole.Clearance_Officer
+            );
+
+            cboFilter2.Visible = canManage;
+            cboFilter2.Items.Clear();
+            if (canManage)
+            {
+                cboFilter2.Items.AddRange(new object[] { "All Employees", "My Department Clearances", "My Clearances Only" });
+                cboFilter2.SelectedIndex = 0;
+            }
+
+            btnToolbarAction.Visible = false;
+        }
+
+        private void LoadClearancesGrid()
+        {
+            dgvData.Columns.Clear();
+            dgvData.Rows.Clear();
+
+            dgvData.Columns.Add("ReqNumber", "Request #");
+            dgvData.Columns.Add("EmpName", "Employee");
+            dgvData.Columns.Add("EmpCode", "Emp Code");
+            dgvData.Columns.Add("Dept", "Department");
+            dgvData.Columns.Add("Type", "Leave Type");
+            dgvData.Columns.Add("Dates", "Study Period");
+            dgvData.Columns.Add("Days", "Days");
+            dgvData.Columns.Add("Checklist", "Clearance Handover");
+            dgvData.Columns.Add("Status", "Clearance Status");
+
+            var actionCol = new DataGridViewButtonColumn
+            {
+                Name = "Actions",
+                HeaderText = "Actions",
+                Text = "⋮",
+                UseColumnTextForButtonValue = true,
+                Width = 65,
+                FlatStyle = FlatStyle.Flat
+            };
+            dgvData.Columns.Add(actionCol);
+
+            string search = txtSearch.Text.Trim().ToLowerInvariant();
+            string statusFilter = cboFilter1.SelectedItem?.ToString() ?? "Pending Clearance";
+            string scopeFilter = cboFilter2.Visible ? (cboFilter2.SelectedItem?.ToString() ?? "All Employees") : "My Clearances Only";
+
+            var currentUser = AuthService.Instance.CurrentUser;
+            var currentEmp = AuthService.Instance.CurrentEmployee;
+            int currentEmpId = currentUser?.EmployeeId ?? -1;
+            int currentEmpDeptId = currentEmp?.DepartmentId ?? -1;
+
+            bool canManage = AuthService.Instance.HasAnyRole(
+                SystemRole.Admin,
+                SystemRole.HR_Manager,
+                SystemRole.Department_Head,
+                SystemRole.Clearance_Officer
+            );
+
+            // Respecting rule: Only show Study / Clearance requests in CLEARANCE_IN_PROGRESS or APPROVED (Completed).
+            // DRAFT, SUBMITTED, UNDER_REVIEW, REJECTED, CANCELLED are strictly NOT shown.
+            var clearanceRequests = DataStore.Instance.LeaveRequests
+                .Where(r => r.RequiresClearance || r.LeaveTypeId == 3)
+                .Where(r => r.Status == RequestStatus.CLEARANCE_IN_PROGRESS || r.Status == RequestStatus.APPROVED)
+                .OrderByDescending(r => r.CreatedAt);
+
+            foreach (var r in clearanceRequests)
+            {
+                // Status filter
+                if (statusFilter == "Pending Clearance" && r.Status != RequestStatus.CLEARANCE_IN_PROGRESS) continue;
+                if (statusFilter == "Completed Clearance" && r.Status != RequestStatus.APPROVED) continue;
+
+                // Scope filter: If regular employee or user chose "My Clearances Only", show only their own requests
+                if (!canManage || scopeFilter == "My Clearances Only")
+                {
+                    if (r.EmployeeId != currentEmpId) continue;
+                }
+                else if (scopeFilter == "My Department Clearances")
+                {
+                    var requestEmp = DataStore.Instance.Employees.FirstOrDefault(e => e.Id == r.EmployeeId);
+                    if (requestEmp?.DepartmentId != currentEmpDeptId) continue;
+                }
+
+                var emp = DataStore.Instance.Employees.FirstOrDefault(e => e.Id == r.EmployeeId);
+                var lt = DataStore.Instance.LeaveTypes.FirstOrDefault(l => l.Id == r.LeaveTypeId);
+
+                string empCode = emp?.EmployeeCode ?? "N/A";
+                string empName = emp?.FullName ?? "N/A";
+                string dept = emp?.DepartmentName ?? "N/A";
+                string typeName = lt?.Name ?? "Study & Sabbatical Leave";
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    bool match = r.RequestNumber.ToLowerInvariant().Contains(search) ||
+                                 empCode.ToLowerInvariant().Contains(search) ||
+                                 empName.ToLowerInvariant().Contains(search) ||
+                                 dept.ToLowerInvariant().Contains(search) ||
+                                 typeName.ToLowerInvariant().Contains(search);
+                    if (!match) continue;
+                }
+
+                int totalItems = r.ClearanceChecklist.Count;
+                int clearedItems = r.ClearanceChecklist.Count(c => c.Status == ClearanceStatus.CLEARED);
+                string progressText = totalItems == 0 ? "No Handover Req" :
+                    (clearedItems == totalItems ? $"Completed ({clearedItems}/{totalItems})" : $"{clearedItems}/{totalItems} Cleared");
+
+                string statusText = r.Status == RequestStatus.APPROVED ? "COMPLETED" : "PENDING CLEARANCE";
+
+                int idx = dgvData.Rows.Add(
+                    r.RequestNumber,
+                    empName,
+                    empCode,
+                    dept,
+                    typeName,
+                    $"{r.StartDate:yyyy-MM-dd} to {r.EndDate:yyyy-MM-dd}",
+                    r.DurationDays,
+                    progressText,
+                    statusText
+                );
+                dgvData.Rows[idx].Tag = r;
+            }
+        }
+
+        private void ShowClearanceActionMenu(LeaveRequest req, int rowIndex, int colIndex)
+        {
+            var menu = new ContextMenuStrip();
+            menu.RenderMode = ToolStripRenderMode.System;
+            menu.Font = new Font("Segoe UI", 9.5F);
+
+            var itemView = new ToolStripMenuItem("View Clearance Checklist & Progress", null, (s, ev) =>
+            {
+                using (var dlg = new LeaveClearanceDialog(req))
+                {
+                    if (dlg.ShowDialog(this) == DialogResult.OK)
+                    {
+                        RefreshActiveData();
+                    }
+                }
+            });
+            menu.Items.Add(itemView);
+
+            bool canAction = AuthService.Instance.HasAnyRole(
+                SystemRole.Clearance_Officer,
+                SystemRole.Admin,
+                SystemRole.Department_Head,
+                SystemRole.HR_Manager
+            );
+
+            var pendingItem = req.ClearanceChecklist.FirstOrDefault(c => c.Status != ClearanceStatus.CLEARED);
+            if (canAction && pendingItem != null && req.Status == RequestStatus.CLEARANCE_IN_PROGRESS)
+            {
+                menu.Items.Add(new ToolStripSeparator());
+                menu.Items.Add(new ToolStripMenuItem($"✓ Quick Clear: {pendingItem.ItemName}", null, (s, ev) =>
+                {
+                    var res = LeaveService.Instance.ClearChecklistItem(req.Id, pendingItem.Id);
+                    MessageBox.Show(res.Message, res.Success ? "Clearance Sign-Off" : "Notice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    RefreshActiveData();
+                }));
+            }
+
+            Rectangle cellRect = dgvData.GetCellDisplayRectangle(colIndex, rowIndex, true);
+            Point pt = dgvData.PointToScreen(new Point(cellRect.Left, cellRect.Bottom));
+            menu.Show(pt);
+        }
+
         private void SetupLedgerToolbar()
         {
             txtSearch.PlaceholderText = "Search ledger by employee...";
@@ -1233,6 +1418,10 @@ namespace ELMS.Forms
             else if (_currentView == ActiveView.Roles)
             {
                 LoadRolesGrid();
+            }
+            else if (_currentView == ActiveView.Clearances)
+            {
+                LoadClearancesGrid();
             }
             else if (_currentView == ActiveView.Ledger)
             {
@@ -1382,6 +1571,13 @@ namespace ELMS.Forms
                     ShowRoleActionMenu(r, e.RowIndex, e.ColumnIndex);
                 }
             }
+            else if (_currentView == ActiveView.Clearances && dgvData.Columns[e.ColumnIndex].Name == "Actions")
+            {
+                if (dgvData.Rows[e.RowIndex].Tag is LeaveRequest clrReq)
+                {
+                    ShowClearanceActionMenu(clrReq, e.RowIndex, e.ColumnIndex);
+                }
+            }
         }
 
         private void dgvData_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -1392,9 +1588,9 @@ namespace ELMS.Forms
             if (colName == "Status")
             {
                 string val = e.Value.ToString() ?? "";
-                if (val == "APPROVED") { e.CellStyle.ForeColor = Color.FromArgb(22, 163, 74); e.CellStyle.Font = new Font(dgvData.Font, FontStyle.Bold); }
+                if (val == "APPROVED" || val == "COMPLETED") { e.CellStyle.ForeColor = Color.FromArgb(22, 163, 74); e.CellStyle.Font = new Font(dgvData.Font, FontStyle.Bold); }
                 else if (val == "REJECTED" || val == "CANCELLED") { e.CellStyle.ForeColor = Color.FromArgb(220, 38, 38); }
-                else if (val == "CLEARANCE_IN_PROGRESS") { e.CellStyle.ForeColor = Color.FromArgb(37, 99, 235); }
+                else if (val == "CLEARANCE_IN_PROGRESS" || val == "PENDING CLEARANCE") { e.CellStyle.ForeColor = Color.FromArgb(234, 88, 12); e.CellStyle.Font = new Font(dgvData.Font, FontStyle.Bold); }
                 else { e.CellStyle.ForeColor = Color.FromArgb(234, 88, 12); }
             }
             else if (colName == "Balance")
