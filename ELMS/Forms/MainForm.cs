@@ -46,6 +46,7 @@ namespace ELMS.Forms
         private ActiveView _currentView = ActiveView.Dashboard;
         private bool _isSidebarCollapsed = false;
         private int _hoveredPieSlice = -1;
+        private DataTablePagination paginationControl = null!;
 
         public MainForm()
         {
@@ -60,6 +61,9 @@ namespace ELMS.Forms
         private void ApplyThemeAndStyles()
         {
             ElmsTheme.ApplyGridStyle(dgvData);
+            paginationControl = new DataTablePagination();
+            pnlGridView.Controls.Add(paginationControl);
+            dgvData.BringToFront();
             dgvData.CurrentCellDirtyStateChanged += dgvData_CurrentCellDirtyStateChanged;
             dgvData.CellValueChanged += dgvData_CellValueChanged;
 
@@ -203,6 +207,7 @@ namespace ELMS.Forms
             {
                 case ActiveView.Dashboard:
                     HighlightNav(btnNavDashboard);
+                    paginationControl?.ResetPage();
                     lblBreadcrumb.Text = "Dashboard  /  Overview";
                     if (pnlTabEmployeesView.Visible) ShowEmployeesTab();
                     else ShowLeavesTab();
@@ -343,158 +348,375 @@ namespace ELMS.Forms
             int onDuty = Math.Max(0, active - onLeave);
             int depts = DataStore.Instance.Departments.Count;
 
+            lblEmpKpi1Title.Text = "TOTAL EMPLOYEES";
             lblEmpKpi1Val.Text = total.ToString();
-            lblEmpKpi2Val.Text = active.ToString();
-            lblEmpKpi3Val.Text = onDuty.ToString();
+            lblEmpKpi1Sub.Text = "Total Regular Staff";
+
+            lblEmpKpi2Title.Text = "ACTIVE ON-DUTY";
+            lblEmpKpi2Val.Text = onDuty.ToString();
+            lblEmpKpi2Sub.Text = "Online & Present";
+
+            lblEmpKpi3Title.Text = "AWAY ON LEAVE";
+            lblEmpKpi3Val.Text = onLeave.ToString();
+            lblEmpKpi3Sub.Text = "Approved Absences";
+
+            lblEmpKpi4Title.Text = "DEPARTMENTS";
             lblEmpKpi4Val.Text = depts.ToString();
+            lblEmpKpi4Sub.Text = "Operational Units";
 
             pnlEmpDeptBarContainer.Invalidate();
-            pnlDemographicsContainer.Invalidate();
+        }
+
+        private int _hoveredEmpSlice = -1;
+
+        private (int centerX, int centerY, int outerRadius, int innerRadius, dynamic[] segments, float[] startAngles, float[] sweepAngles, int leftRegionW) GetEmpPieGeometry()
+        {
+            var employees = DataStore.Instance.Employees;
+            var requests = DataStore.Instance.LeaveRequests;
+
+            int total = employees.Count;
+            int active = employees.Count(e => e.IsActive);
+            int onLeave = requests.Count(r => r.Status == RequestStatus.APPROVED &&
+                DateTime.Today >= r.StartDate.Date && DateTime.Today <= r.EndDate.Date);
+            int onDuty = Math.Max(0, active - onLeave);
+            int inClearance = requests.Count(r => r.Status == RequestStatus.CLEARANCE_IN_PROGRESS);
+            int inactive = employees.Count(e => !e.IsActive);
+
+            int safeTotal = Math.Max(1, total);
+
+            int totalW = pnlEmpDeptBarContainer.ClientSize.Width;
+            int totalH = pnlEmpDeptBarContainer.ClientSize.Height;
+
+            int leftRegionW = Math.Max(320, (int)(totalW * 0.44f));
+            int chartDiameter = Math.Min(220, Math.Min(leftRegionW - 40, totalH - 90));
+            chartDiameter = Math.Max(160, chartDiameter);
+
+            int outerRadius = chartDiameter / 2;
+            int innerRadius = (int)(outerRadius * 0.65);
+
+            int centerX = leftRegionW / 2;
+            int centerY = 24 + outerRadius;
+
+            var segments = new[]
+            {
+                new { Label = "Active On-Duty", Count = onDuty, Color = Color.FromArgb(22, 163, 74) },      // #16A34A
+                new { Label = "On Leave", Count = onLeave, Color = Color.FromArgb(234, 88, 12) },          // #EA580C
+                new { Label = "In Clearance", Count = inClearance, Color = Color.FromArgb(37, 99, 235) },   // #2563EB
+                new { Label = "Inactive", Count = inactive, Color = Color.FromArgb(148, 163, 184) }        // #94A3B8
+            };
+
+            float startAngle = -90f;
+            float[] startAngles = new float[segments.Length];
+            float[] sweepAngles = new float[segments.Length];
+
+            for (int i = 0; i < segments.Length; i++)
+            {
+                float sweep = ((float)segments[i].Count / safeTotal) * 360f;
+                startAngles[i] = startAngle;
+                sweepAngles[i] = sweep;
+                startAngle += sweep;
+            }
+
+            return (centerX, centerY, outerRadius, innerRadius, segments, startAngles, sweepAngles, leftRegionW);
+        }
+
+        private void pnlEmpDeptBarContainer_MouseMove(object sender, MouseEventArgs e)
+        {
+            var geo = GetEmpPieGeometry();
+            int dx = e.X - geo.centerX;
+            int dy = e.Y - geo.centerY;
+            double dist = Math.Sqrt(dx * dx + dy * dy);
+
+            int hoveredIndex = -1;
+            if (dist >= geo.innerRadius - 4 && dist <= geo.outerRadius + 8)
+            {
+                double angle = Math.Atan2(dy, dx) * 180.0 / Math.PI;
+                double adjAngle = (angle + 90.0 + 360.0) % 360.0;
+
+                for (int i = 0; i < geo.segments.Length; i++)
+                {
+                    double sAngle = (geo.startAngles[i] + 90.0 + 360.0) % 360.0;
+                    double eAngle = sAngle + geo.sweepAngles[i];
+
+                    if (adjAngle >= sAngle && adjAngle < eAngle)
+                    {
+                        hoveredIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (hoveredIndex != _hoveredEmpSlice)
+            {
+                _hoveredEmpSlice = hoveredIndex;
+                pnlEmpDeptBarContainer.Invalidate();
+            }
+        }
+
+        private void pnlEmpDeptBarContainer_MouseLeave(object sender, EventArgs e)
+        {
+            if (_hoveredEmpSlice != -1)
+            {
+                _hoveredEmpSlice = -1;
+                pnlEmpDeptBarContainer.Invalidate();
+            }
         }
 
         private void pnlEmpDeptBarContainer_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            var depts = DataStore.Instance.Departments;
-            int count = depts.Count;
-            if (count == 0) return;
-
-            int maxStaff = Math.Max(1, depts.Max(d => d.ActiveStaffCount));
-
-            int totalW = pnlEmpDeptBarContainer.ClientSize.Width;
-            int totalH = pnlEmpDeptBarContainer.ClientSize.Height;
-
-            int chartLeft = 40;
-            int chartRight = totalW - 20;
-            int chartTop = 30;
-            int chartBottom = totalH - 45;
-            int chartHeight = chartBottom - chartTop;
-            int chartWidth = chartRight - chartLeft;
-
-            using (var gridPen = new Pen(Color.FromArgb(241, 245, 249), 1))
-            {
-                for (int i = 0; i <= 4; i++)
-                {
-                    int y = chartBottom - (chartHeight * i) / 4;
-                    e.Graphics.DrawLine(gridPen, chartLeft, y, chartRight, y);
-                }
-            }
-
-            Color[] deptColors = new[]
-            {
-                Color.FromArgb(37, 99, 235),  // ENG - Royal Blue
-                Color.FromArgb(234, 88, 12),  // HR - Corporate Orange
-                Color.FromArgb(16, 185, 129), // FIN - Emerald
-                Color.FromArgb(139, 92, 246), // OPS - Violet
-                Color.FromArgb(245, 158, 11)  // LEG - Amber
-            };
-
-            int barSlotW = chartWidth / count;
-            int barWidth = Math.Min(48, barSlotW - 20);
-
-            using (var textBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
-            using (var mutedBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
-            using (var fontVal = new Font("Segoe UI", 10.5f, FontStyle.Bold))
-            using (var fontLabel = new Font("Segoe UI", 9f))
-            using (var sf = new StringFormat { Alignment = StringAlignment.Center })
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var d = depts[i];
-                    int slotCenter = chartLeft + (i * barSlotW) + (barSlotW / 2);
-                    int barH = (d.ActiveStaffCount * (chartHeight - 20)) / maxStaff;
-                    int barX = slotCenter - (barWidth / 2);
-                    int barY = chartBottom - barH;
-
-                    Color c = deptColors[i % deptColors.Length];
-                    using (var brush = new SolidBrush(c))
-                    {
-                        e.Graphics.FillRectangle(brush, barX, barY, barWidth, barH);
-                    }
-
-                    e.Graphics.DrawString(d.ActiveStaffCount.ToString(), fontVal, textBrush, slotCenter, barY - 22, sf);
-                    e.Graphics.DrawString(d.Code, fontLabel, mutedBrush, slotCenter, chartBottom + 8, sf);
-                }
-            }
-        }
-
-        private void pnlDemographicsContainer_Paint(object sender, PaintEventArgs e)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
+            var geo = GetEmpPieGeometry();
             var employees = DataStore.Instance.Employees;
-            int total = Math.Max(1, employees.Count);
+            int total = employees.Count;
+            int safeTotal = Math.Max(1, total);
 
-            int maleCount = employees.Count(emp => emp.Gender.Equals("Male", StringComparison.OrdinalIgnoreCase));
-            int femaleCount = total - maleCount;
+            Rectangle outerRect = new Rectangle(geo.centerX - geo.outerRadius, geo.centerY - geo.outerRadius, geo.outerRadius * 2, geo.outerRadius * 2);
+            Rectangle innerRect = new Rectangle(geo.centerX - geo.innerRadius, geo.centerY - geo.innerRadius, geo.innerRadius * 2, geo.innerRadius * 2);
 
-            int activeCount = employees.Count(emp => emp.IsActive);
-            int inactiveCount = total - activeCount;
-
-            int onLeave = DataStore.Instance.LeaveRequests.Count(r => r.Status == RequestStatus.APPROVED &&
-                DateTime.Today >= r.StartDate.Date && DateTime.Today <= r.EndDate.Date);
-            int onDuty = Math.Max(0, activeCount - onLeave);
-
-            int containerW = pnlDemographicsContainer.ClientSize.Width - 20;
-
-            DrawSegmentMeter(e.Graphics, 10, 20, containerW, "Gender Diversity",
-                new[] {
-                    new { Label = "Male", Count = maleCount, Color = Color.FromArgb(59, 130, 246) },
-                    new { Label = "Female", Count = femaleCount, Color = Color.FromArgb(236, 72, 153) }
-                }, total);
-
-            DrawSegmentMeter(e.Graphics, 10, 150, containerW, "Employment Status",
-                new[] {
-                    new { Label = "Active", Count = activeCount, Color = Color.FromArgb(16, 185, 129) },
-                    new { Label = "Inactive", Count = inactiveCount, Color = Color.FromArgb(148, 163, 184) }
-                }, total);
-
-            DrawSegmentMeter(e.Graphics, 10, 280, containerW, "Workforce Availability Today",
-                new[] {
-                    new { Label = "On Duty", Count = onDuty, Color = Color.FromArgb(16, 185, 129) },
-                    new { Label = "On Leave", Count = onLeave, Color = Color.FromArgb(245, 158, 11) }
-                }, total);
-        }
-
-        private void DrawSegmentMeter(Graphics g, int x, int y, int width, string title, dynamic[] segments, int total)
-        {
-            using (var fontTitle = new Font("Segoe UI", 9.5f, FontStyle.Bold))
-            using (var fontText = new Font("Segoe UI", 8.5f))
-            using (var titleBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
-            using (var mutedBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+            // =====================================================================
+            // 1. LEFT SIDE: CIRCLE DONUT CHART (Personnel Status & Availability)
+            // =====================================================================
+            for (int i = 0; i < geo.segments.Length; i++)
             {
-                g.DrawString(title, fontTitle, titleBrush, x, y);
+                if (geo.sweepAngles[i] <= 0) continue;
 
-                int barY = y + 26;
-                int barHeight = 12;
+                var seg = geo.segments[i];
+                Rectangle drawRect = outerRect;
 
-                int curX = x;
-                for (int i = 0; i < segments.Length; i++)
+                if (i == _hoveredEmpSlice)
                 {
-                    var seg = segments[i];
-                    int segW = (int)(((double)seg.Count / total) * width);
-                    if (i == segments.Length - 1) segW = width - (curX - x);
-
-                    using (var brush = new SolidBrush(seg.Color))
-                    {
-                        g.FillRectangle(brush, curX, barY, Math.Max(2, segW), barHeight);
-                    }
-                    curX += segW;
+                    double midAngle = (geo.startAngles[i] + geo.sweepAngles[i] / 2.0) * Math.PI / 180.0;
+                    int explodeX = (int)(Math.Cos(midAngle) * 5);
+                    int explodeY = (int)(Math.Sin(midAngle) * 5);
+                    drawRect.Offset(explodeX, explodeY);
                 }
 
-                int legendY = barY + 20;
-                int legX = x;
-                foreach (var seg in segments)
+                using (var brush = new SolidBrush(seg.Color))
                 {
-                    double pct = ((double)seg.Count / total) * 100.0;
-                    using (var brush = new SolidBrush(seg.Color))
+                    e.Graphics.FillPie(brush, drawRect, geo.startAngles[i], geo.sweepAngles[i]);
+                }
+            }
+
+            // Cut out inner hole
+            using (var holeBrush = new SolidBrush(Color.White))
+            {
+                e.Graphics.FillEllipse(holeBrush, innerRect);
+            }
+
+            // Radial crisp white separators
+            for (int i = 0; i < geo.segments.Length; i++)
+            {
+                if (geo.sweepAngles[i] <= 0) continue;
+
+                double rad = geo.startAngles[i] * Math.PI / 180.0;
+                float cos = (float)Math.Cos(rad);
+                float sin = (float)Math.Sin(rad);
+
+                PointF pInner = new PointF(geo.centerX + cos * geo.innerRadius, geo.centerY + sin * geo.innerRadius);
+                PointF pOuter = new PointF(geo.centerX + cos * (geo.outerRadius + 1), geo.centerY + sin * (geo.outerRadius + 1));
+
+                using (var sepPen = new Pen(Color.White, 2.5f))
+                {
+                    e.Graphics.DrawLine(sepPen, pInner, pOuter);
+                }
+            }
+
+            // Outer and inner rim borders
+            using (var rimPen = new Pen(Color.FromArgb(241, 245, 249), 1.5f))
+            {
+                e.Graphics.DrawEllipse(rimPen, outerRect);
+                e.Graphics.DrawEllipse(rimPen, innerRect);
+            }
+
+            // Center Text inside Donut Hole: Total Employees count + "Total Staff"
+            using (var fontTotal = new Font("Segoe UI", 22f, FontStyle.Bold))
+            using (var fontTotalSub = new Font("Segoe UI", 8.5f, FontStyle.Regular))
+            using (var valBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+            using (var subBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+            {
+                string valStr = total.ToString();
+                string subStr = "Total Staff";
+
+                var valSz = e.Graphics.MeasureString(valStr, fontTotal);
+                var subSz = e.Graphics.MeasureString(subStr, fontTotalSub);
+
+                float blockH = valSz.Height + subSz.Height - 6;
+                float startY = innerRect.Y + (innerRect.Height - blockH) / 2f;
+
+                float valX = innerRect.X + (innerRect.Width - valSz.Width) / 2f;
+                float subX = innerRect.X + (innerRect.Width - subSz.Width) / 2f;
+
+                e.Graphics.DrawString(valStr, fontTotal, valBrush, valX, startY);
+                e.Graphics.DrawString(subStr, fontTotalSub, subBrush, subX, startY + valSz.Height - 6);
+            }
+
+            // Hover tooltip
+            if (_hoveredEmpSlice >= 0 && _hoveredEmpSlice < geo.segments.Length)
+            {
+                var hSeg = geo.segments[_hoveredEmpSlice];
+                double hPct = ((double)hSeg.Count / safeTotal) * 100.0;
+                string hoverText = $"{hSeg.Label}: {hSeg.Count} staff ({hPct:F1}%)";
+
+                using (var fontTip = new Font("Segoe UI", 9f, FontStyle.Bold))
+                using (var bgBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+                using (var textBrush = new SolidBrush(Color.White))
+                {
+                    var sz = e.Graphics.MeasureString(hoverText, fontTip);
+                    int tipX = geo.centerX - (int)(sz.Width / 2);
+                    int tipY = outerRect.Y - 18;
+
+                    var tipRect = new Rectangle(tipX - 8, tipY - 3, (int)sz.Width + 16, (int)sz.Height + 6);
+                    e.Graphics.FillRectangle(bgBrush, tipRect);
+                    e.Graphics.DrawString(hoverText, fontTip, textBrush, tipX, tipY);
+                }
+            }
+
+            // =====================================================================
+            // 2. BOTTOM LEGEND: CLEAN ONLY, STRICTLY NO PERCENTAGES
+            // =====================================================================
+            int legendY = outerRect.Bottom + 26;
+            int totalLegW = 0;
+            Size[] legSizes = new Size[geo.segments.Length];
+
+            using (var fontLeg = new Font("Segoe UI", 9f, FontStyle.Regular))
+            {
+                for (int i = 0; i < geo.segments.Length; i++)
+                {
+                    legSizes[i] = TextRenderer.MeasureText(geo.segments[i].Label, fontLeg);
+                    totalLegW += 10 + 6 + legSizes[i].Width + 16;
+                }
+            }
+
+            int curLegX = Math.Max(10, (geo.leftRegionW - totalLegW) / 2);
+
+            using (var fontLeg = new Font("Segoe UI", 9f, FontStyle.Regular))
+            using (var fontBold = new Font("Segoe UI", 9f, FontStyle.Bold))
+            using (var textBrush = new SolidBrush(Color.FromArgb(51, 65, 85)))
+            {
+                for (int i = 0; i < geo.segments.Length; i++)
+                {
+                    var seg = geo.segments[i];
+                    bool isHover = (i == _hoveredEmpSlice);
+
+                    using (var bulletBrush = new SolidBrush(seg.Color))
                     {
-                        g.FillEllipse(brush, legX, legendY + 3, 9, 9);
+                        e.Graphics.FillEllipse(bulletBrush, curLegX, legendY + 4, 9, 9);
                     }
-                    string text = $"{seg.Label}: {seg.Count} ({pct:F1}%)";
-                    g.DrawString(text, fontText, mutedBrush, legX + 15, legendY);
-                    legX += 140;
+
+                    var f = isHover ? fontBold : fontLeg;
+                    e.Graphics.DrawString(seg.Label, f, textBrush, curLegX + 15, legendY);
+
+                    curLegX += 15 + legSizes[i].Width + 16;
+                }
+            }
+
+            // =====================================================================
+            // 3. VERTICAL DIVIDER SEPARATING CIRCLE CHART AND ASIDE BAR LIST
+            // =====================================================================
+            int dividerX = geo.leftRegionW + 12;
+            using (var divPen = new Pen(Color.FromArgb(241, 245, 249), 1.5f))
+            {
+                e.Graphics.DrawLine(divPen, dividerX, 16, dividerX, pnlEmpDeptBarContainer.ClientSize.Height - 16);
+            }
+
+            // =====================================================================
+            // 4. RIGHT ASIDE BAR LIST: WORKFORCE BY DEPARTMENT (HRMS BarList Style)
+            // =====================================================================
+            int asideX = dividerX + 24;
+            int asideW = pnlEmpDeptBarContainer.ClientSize.Width - asideX - 20;
+
+            if (asideW > 120)
+            {
+                // Aside Header
+                using (var fontHeaderTitle = new Font("Segoe UI", 10.5f, FontStyle.Bold))
+                using (var fontHeaderSub = new Font("Segoe UI", 8.5f, FontStyle.Regular))
+                using (var titleBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+                using (var subBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+                {
+                    e.Graphics.DrawString("Workforce by Department", fontHeaderTitle, titleBrush, asideX, 12);
+                    e.Graphics.DrawString("Ranked headcount distribution and share across operational divisions", fontHeaderSub, subBrush, asideX, 32);
+                }
+
+                // Compute Department Staff Counts & Percentages
+                var depts = DataStore.Instance.Departments;
+                Color[] deptColors = new[]
+                {
+                    Color.FromArgb(37, 99, 235),   // #2563EB Blue
+                    Color.FromArgb(234, 88, 12),   // #EA580C Orange
+                    Color.FromArgb(22, 163, 74),   // #16A34A Green
+                    Color.FromArgb(139, 92, 246),  // #8B5CF6 Purple
+                    Color.FromArgb(13, 148, 136)   // #0D9488 Teal
+                };
+
+                var deptRows = depts.Select((d, idx) =>
+                {
+                    int count = employees.Count(emp => emp.DepartmentId == d.Id || emp.DepartmentName == d.Name);
+                    double share = ((double)count / safeTotal) * 100.0;
+                    Color color = deptColors[idx % deptColors.Length];
+                    return new { d.Id, d.Name, d.Code, Count = count, Share = share, Color = color };
+                }).OrderByDescending(x => x.Count).ToList();
+
+                int curY = 64;
+                int rowGap = 46;
+                int trackHeight = 7;
+                int trackWidth = asideW - 10;
+
+                using (var fontLabel = new Font("Segoe UI", 9.5f, FontStyle.Regular))
+                using (var fontVal = new Font("Segoe UI", 9.5f, FontStyle.Bold))
+                using (var fontPct = new Font("Segoe UI", 9f, FontStyle.Regular))
+                using (var labelBrush = new SolidBrush(Color.FromArgb(30, 41, 59)))
+                using (var valBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+                using (var pctBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+                using (var trackBgBrush = new SolidBrush(Color.FromArgb(241, 245, 249)))
+                {
+                    foreach (var item in deptRows)
+                    {
+                        if (curY + 30 > pnlEmpDeptBarContainer.ClientSize.Height) break;
+
+                        // Bullet indicator
+                        using (var dotBrush = new SolidBrush(item.Color))
+                        {
+                            e.Graphics.FillEllipse(dotBrush, asideX, curY + 4, 8, 8);
+                        }
+
+                        // Label (Left)
+                        e.Graphics.DrawString(item.Name, fontLabel, labelBrush, asideX + 14, curY);
+
+                        // Value & Share (Right)
+                        string valText = $"{item.Count} staff";
+                        string pctText = $"  {item.Share:F1}%";
+
+                        var valSz = e.Graphics.MeasureString(valText, fontVal);
+                        var pctSz = e.Graphics.MeasureString(pctText, fontPct);
+
+                        float rightTextX = asideX + trackWidth - (valSz.Width + pctSz.Width);
+                        e.Graphics.DrawString(valText, fontVal, valBrush, rightTextX, curY);
+                        e.Graphics.DrawString(pctText, fontPct, pctBrush, rightTextX + valSz.Width, curY);
+
+                        // Horizontal Meter Track
+                        int barTrackY = curY + 22;
+                        Rectangle trackRect = new Rectangle(asideX, barTrackY, trackWidth, trackHeight);
+
+                        using (var pathBg = CreateRoundedRectanglePath(trackRect, 3))
+                        {
+                            e.Graphics.FillPath(trackBgBrush, pathBg);
+                        }
+
+                        int fillWidth = Math.Max(0, (int)(trackWidth * (item.Share / 100.0)));
+                        if (fillWidth > 2)
+                        {
+                            Rectangle fillRect = new Rectangle(asideX, barTrackY, fillWidth, trackHeight);
+                            using (var pathFill = CreateRoundedRectanglePath(fillRect, 3))
+                            using (var fillBrush = new SolidBrush(item.Color))
+                            {
+                                e.Graphics.FillPath(fillBrush, pathFill);
+                            }
+                        }
+
+                        curY += rowGap;
+                    }
                 }
             }
         }
@@ -893,6 +1115,7 @@ namespace ELMS.Forms
         private void SelectLeaveSubTab(LeaveSubTab tab)
         {
             _currentLeaveSubTab = tab;
+            paginationControl?.ResetPage();
             ResetLeaveSubTabButtons();
 
             switch (tab)
@@ -1998,6 +2221,7 @@ namespace ELMS.Forms
 
         private void FilterOrSearch_Changed(object sender, EventArgs e)
         {
+            paginationControl?.ResetPage();
             RefreshActiveData();
         }
 
@@ -2050,6 +2274,11 @@ namespace ELMS.Forms
             else if (_currentView == ActiveView.Ledger)
             {
                 LoadLedgerGrid();
+            }
+
+            if (pnlGridView.Visible)
+            {
+                paginationControl?.ApplyPagination(dgvData);
             }
         }
 
@@ -2926,16 +3155,8 @@ private void ShowDepartmentActionMenu(Department dept, int rowIndex, int colInde
 
         private void pnlEmpContent_Resize(object sender, EventArgs e)
         {
-            int totalW = pnlEmpContent.ClientSize.Width;
-            int totalH = pnlEmpContent.ClientSize.Height;
-            int gap = 14;
-            int halfW = (totalW - gap) / 2;
-
             cardEmpDeptChart.Location = new Point(0, 0);
-            cardEmpDeptChart.Size = new Size(halfW, totalH - 10);
-
-            cardEmpDemographics.Location = new Point(halfW + gap, 0);
-            cardEmpDemographics.Size = new Size(Math.Max(200, totalW - (halfW + gap)), totalH - 10);
+            cardEmpDeptChart.Size = pnlEmpContent.ClientSize;
         }
 
         private void lblUserAvatar_Paint(object sender, PaintEventArgs e)

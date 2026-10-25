@@ -60,6 +60,9 @@ namespace ELMS.Forms
         private NumericUpDown numDefaultQuota = null!;
         private NumericUpDown numMinServiceMonths = null!;
         private DataGridView dgvLeaveCategoriesSummary = null!;
+        private DataTablePagination pagClearance = null!;
+        private DataTablePagination pagApprovals = null!;
+        private DataTablePagination pagLeave = null!;
 
         // State
         private string _activeSection = "clearance"; // "clearance", "approvals", "leave"
@@ -446,7 +449,10 @@ namespace ELMS.Forms
             };
             menuClearance.Items.AddRange(new ToolStripItem[] { itemEditClr, itemDelClr });
 
+            pagClearance = new DataTablePagination();
+            pnlSecClearance.Controls.Add(pagClearance);
             pnlSecClearance.Controls.Add(dgvClearance);
+            dgvClearance.BringToFront();
             pnlSecClearance.Controls.Add(pnlTool);
             pnlSecClearance.Controls.Add(pnlHead);
         }
@@ -633,7 +639,10 @@ namespace ELMS.Forms
             };
             menuApproval.Items.AddRange(new ToolStripItem[] { itemEditAppr, itemDelAppr });
 
+            pagApprovals = new DataTablePagination();
+            pnlSecApprovals.Controls.Add(pagApprovals);
             pnlSecApprovals.Controls.Add(dgvApprovals);
+            dgvApprovals.BringToFront();
             pnlSecApprovals.Controls.Add(pnlTool);
             pnlSecApprovals.Controls.Add(pnlHead);
         }
@@ -669,6 +678,7 @@ namespace ELMS.Forms
 
                 dgvApprovals.Rows[rowIdx].Tag = wf;
             }
+            pagApprovals?.ApplyPagination(dgvApprovals);
         }
 
         private void dgvApprovals_CellContentClick(object? sender, DataGridViewCellEventArgs e)
@@ -936,7 +946,10 @@ namespace ELMS.Forms
                 }
             };
 
+            pagLeave = new DataTablePagination();
+            pnlGridWrap.Controls.Add(pagLeave);
             pnlGridWrap.Controls.Add(dgvLeaveCategoriesSummary);
+            dgvLeaveCategoriesSummary.BringToFront();
 
             // Assemble into pnlSecLeave
             pnlSecLeave.Controls.Add(pnlGridWrap);
@@ -1095,6 +1108,7 @@ namespace ELMS.Forms
                 );
                 dgvLeaveCategoriesSummary.Rows[rowIdx].Tag = lt;
             }
+            pagLeave?.ApplyPagination(dgvLeaveCategoriesSummary);
         }
 
         // =====================================================================

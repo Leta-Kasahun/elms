@@ -601,7 +601,6 @@ namespace ELMS.Forms
             // 
             // pnlEmpContent
             // 
-            this.pnlEmpContent.Controls.Add(this.cardEmpDemographics);
             this.pnlEmpContent.Controls.Add(this.cardEmpDeptChart);
             this.pnlEmpContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlEmpContent.Location = new System.Drawing.Point(0, 106);
@@ -632,7 +631,7 @@ namespace ELMS.Forms
             this.pnlDemographicsContainer.Name = "pnlDemographicsContainer";
             this.pnlDemographicsContainer.Size = new System.Drawing.Size(419, 418);
             this.pnlDemographicsContainer.TabIndex = 2;
-            this.pnlDemographicsContainer.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlDemographicsContainer_Paint);
+            
             // 
             // lblDemoSub
             // 
@@ -662,10 +661,11 @@ namespace ELMS.Forms
             this.cardEmpDeptChart.Controls.Add(this.pnlEmpDeptBarContainer);
             this.cardEmpDeptChart.Controls.Add(this.lblDeptChartSub);
             this.cardEmpDeptChart.Controls.Add(this.lblDeptChartTitle);
+            this.cardEmpDeptChart.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cardEmpDeptChart.Location = new System.Drawing.Point(0, 0);
             this.cardEmpDeptChart.Name = "cardEmpDeptChart";
-            this.cardEmpDeptChart.Padding = new System.Windows.Forms.Padding(18);
-            this.cardEmpDeptChart.Size = new System.Drawing.Size(465, 500);
+            this.cardEmpDeptChart.Padding = new System.Windows.Forms.Padding(20);
+            this.cardEmpDeptChart.Size = new System.Drawing.Size(930, 512);
             this.cardEmpDeptChart.TabIndex = 0;
             this.cardEmpDeptChart.Paint += new System.Windows.Forms.PaintEventHandler(this.Card_Paint);
             // 
@@ -674,11 +674,13 @@ namespace ELMS.Forms
             this.pnlEmpDeptBarContainer.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlEmpDeptBarContainer.Location = new System.Drawing.Point(18, 64);
+            this.pnlEmpDeptBarContainer.Location = new System.Drawing.Point(20, 64);
             this.pnlEmpDeptBarContainer.Name = "pnlEmpDeptBarContainer";
-            this.pnlEmpDeptBarContainer.Size = new System.Drawing.Size(429, 418);
+            this.pnlEmpDeptBarContainer.Size = new System.Drawing.Size(890, 428);
             this.pnlEmpDeptBarContainer.TabIndex = 2;
             this.pnlEmpDeptBarContainer.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlEmpDeptBarContainer_Paint);
+            this.pnlEmpDeptBarContainer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlEmpDeptBarContainer_MouseMove);
+            this.pnlEmpDeptBarContainer.MouseLeave += new System.EventHandler(this.pnlEmpDeptBarContainer_MouseLeave);
             // 
             // lblDeptChartSub
             // 
