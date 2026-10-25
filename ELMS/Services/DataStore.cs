@@ -17,6 +17,8 @@ namespace ELMS.Services
         public List<LeaveEntitlement> Entitlements { get; } = new List<LeaveEntitlement>();
         public List<LeaveRequest> LeaveRequests { get; } = new List<LeaveRequest>();
         public List<Role> Roles { get; } = new List<Role>();
+        public List<ClearancePolicy> ClearancePolicies { get; } = new List<ClearancePolicy>();
+        public List<ApprovalWorkflowDefinition> ApprovalWorkflows { get; } = new List<ApprovalWorkflowDefinition>();
 
         private int _nextRequestId = 200;
 
@@ -363,6 +365,89 @@ namespace ELMS.Services
             r4.ClearanceChecklist.Add(new ClearanceItem { Id = 7, LeaveRequestId = 4, ItemName = "HR Compliance & Documentation Clearance", DepartmentOrUnit = "Human Resources", Status = ClearanceStatus.CLEARED, ClearedByName = "David Miller", ClearedDate = DateTime.Now.AddDays(-18) });
 
             LeaveRequests.AddRange(new[] { r1, r2, r3, r4 });
+
+            // -------------------------------------------------------------
+            // 7. CLEARANCE POLICIES CONFIGURATION
+            // -------------------------------------------------------------
+            ClearancePolicies.Add(new ClearancePolicy
+            {
+                Id = 1,
+                Code = "CLR-STD-01",
+                Name = "Study & Sabbatical Leave Clearance Policy",
+                RequestType = "Study & Sabbatical Leave",
+                Description = "Academic and long-term research sabbatical asset, library, and project handover clearance policy.",
+                IsSequential = true,
+                GenerateClearanceLetter = true,
+                IsActive = true,
+                RequiredUnits = new List<string> { "University Library", "Department Hardware & Lab Access", "Finance Office", "HR Compliance" }
+            });
+
+            ClearancePolicies.Add(new ClearancePolicy
+            {
+                Id = 2,
+                Code = "CLR-TERM-01",
+                Name = "Employee Exit & Termination Clearance Policy",
+                RequestType = "Employment Termination",
+                Description = "Formal multi-unit separation and asset recovery protocol for exiting personnel.",
+                IsSequential = false,
+                GenerateClearanceLetter = true,
+                IsActive = true,
+                RequiredUnits = new List<string> { "IT Asset Return", "Security Access Card", "Finance & Settlement", "Department Head Sign-off" }
+            });
+
+            ClearancePolicies.Add(new ClearancePolicy
+            {
+                Id = 3,
+                Code = "CLR-TRANS-01",
+                Name = "Inter-Department Transfer Handover Policy",
+                RequestType = "Inter-Department Transfer",
+                Description = "Departmental handover protocol for employee relocation and position reassignments.",
+                IsSequential = true,
+                GenerateClearanceLetter = false,
+                IsActive = true,
+                RequiredUnits = new List<string> { "Current Department Project Handover", "New Department Equipment Issuance" }
+            });
+
+            // -------------------------------------------------------------
+            // 8. APPROVAL WORKFLOWS CONFIGURATION
+            // -------------------------------------------------------------
+            var wf1 = new ApprovalWorkflowDefinition
+            {
+                Id = 1,
+                Name = "Standard Leave Request Sequential Approval",
+                RequestType = "Annual / Medical Leave",
+                Description = "Standard two-step sequential approval chain for day-to-day employee leave requests.",
+                IsSequential = true,
+                IsActive = true
+            };
+            wf1.Steps.Add(new ApprovalStepDefinition { StepOrder = 1, StepName = "Department Head Review", ApproverRole = SystemRole.Department_Head, IsMandatory = true });
+            wf1.Steps.Add(new ApprovalStepDefinition { StepOrder = 2, StepName = "HR Director Authorization", ApproverRole = SystemRole.HR_Manager, IsMandatory = true });
+
+            var wf2 = new ApprovalWorkflowDefinition
+            {
+                Id = 2,
+                Name = "Academic Sabbatical & Extended Study Workflow",
+                RequestType = "Study & Sabbatical Leave",
+                Description = "Comprehensive three-step review including departmental, HR, and unit clearance officer validation.",
+                IsSequential = true,
+                IsActive = true
+            };
+            wf2.Steps.Add(new ApprovalStepDefinition { StepOrder = 1, StepName = "Department Head Review", ApproverRole = SystemRole.Department_Head, IsMandatory = true });
+            wf2.Steps.Add(new ApprovalStepDefinition { StepOrder = 2, StepName = "HR Director Authorization", ApproverRole = SystemRole.HR_Manager, IsMandatory = true });
+            wf2.Steps.Add(new ApprovalStepDefinition { StepOrder = 3, StepName = "Clearance Officer Verification", ApproverRole = SystemRole.Clearance_Officer, IsMandatory = true });
+
+            var wf3 = new ApprovalWorkflowDefinition
+            {
+                Id = 3,
+                Name = "Executive & Fast-Track Leave Authorization",
+                RequestType = "Executive Leave",
+                Description = "Single-step expedited authorization workflow for senior executive personnel.",
+                IsSequential = false,
+                IsActive = true
+            };
+            wf3.Steps.Add(new ApprovalStepDefinition { StepOrder = 1, StepName = "HR Executive Sign-off", ApproverRole = SystemRole.HR_Manager, IsMandatory = true });
+
+            ApprovalWorkflows.AddRange(new[] { wf1, wf2, wf3 });
             Roles.AddRange(new[]
             {
                 new Role
