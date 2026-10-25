@@ -60,8 +60,11 @@ namespace ELMS.Common
             grid.AllowUserToAddRows = false;
             grid.AllowUserToDeleteRows = false;
             grid.AllowUserToResizeRows = false;
+            grid.AllowUserToResizeColumns = true;
+            grid.RowHeadersVisible = false;
+            grid.ScrollBars = ScrollBars.Both;
             grid.ReadOnly = true;
-            grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
 
             grid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
             {

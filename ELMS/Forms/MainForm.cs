@@ -789,19 +789,32 @@ namespace ELMS.Forms
             btnToolbarAction.Text = "+ New Request";
         }
 
+        private void AddGridColumn(string name, string headerText, int width, int minWidth = 60, bool fill = false)
+        {
+            var col = new DataGridViewTextBoxColumn
+            {
+                Name = name,
+                HeaderText = headerText,
+                Width = width,
+                MinimumWidth = minWidth,
+                AutoSizeMode = fill ? DataGridViewAutoSizeColumnMode.Fill : DataGridViewAutoSizeColumnMode.None
+            };
+            dgvData.Columns.Add(col);
+        }
+
         private void LoadLeaveRequestsSubGrid()
         {
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
-            dgvData.Columns.Add("ReqNumber", "Request #");
-            dgvData.Columns.Add("EmpName", "Employee");
-            dgvData.Columns.Add("EmpCode", "Emp Code");
-            dgvData.Columns.Add("Type", "Leave Type");
-            dgvData.Columns.Add("StartDate", "Start Date");
-            dgvData.Columns.Add("EndDate", "End Date");
-            dgvData.Columns.Add("Days", "Days");
-            dgvData.Columns.Add("Status", "Status");
+            AddGridColumn("ReqNumber", "Request #", 130, 110);
+            AddGridColumn("EmpName", "Employee", 170, 140);
+            AddGridColumn("EmpCode", "Emp Code", 100, 90);
+            AddGridColumn("Type", "Leave Type", 160, 130);
+            AddGridColumn("StartDate", "Start Date", 110, 100);
+            AddGridColumn("EndDate", "End Date", 110, 100);
+            AddGridColumn("Days", "Days", 75, 60);
+            AddGridColumn("Status", "Status", 150, 120, fill: true);
 
             var actionCol = new DataGridViewButtonColumn
             {
@@ -878,13 +891,13 @@ namespace ELMS.Forms
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
-            dgvData.Columns.Add("ReqNumber", "Request #");
-            dgvData.Columns.Add("EmpName", "Employee");
-            dgvData.Columns.Add("Dept", "Department");
-            dgvData.Columns.Add("Type", "Leave Type");
-            dgvData.Columns.Add("Dates", "Date Range");
-            dgvData.Columns.Add("Days", "Days");
-            dgvData.Columns.Add("Status", "Status");
+            AddGridColumn("ReqNumber", "Request #", 130, 110);
+            AddGridColumn("EmpName", "Employee", 170, 140);
+            AddGridColumn("Dept", "Department", 170, 130);
+            AddGridColumn("Type", "Leave Type", 160, 130);
+            AddGridColumn("Dates", "Date Range", 210, 180, fill: true);
+            AddGridColumn("Days", "Days", 75, 60);
+            AddGridColumn("Status", "Status", 150, 120);
 
             var actionCol = new DataGridViewButtonColumn
             {
@@ -960,11 +973,11 @@ namespace ELMS.Forms
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
-            dgvData.Columns.Add("Code", "Type Code");
-            dgvData.Columns.Add("Name", "Leave Type Name");
-            dgvData.Columns.Add("Days", "Annual Quota");
-            dgvData.Columns.Add("Months", "Min Service");
-            dgvData.Columns.Add("Clearance", "Clearance Required");
+            AddGridColumn("Code", "Type Code", 110, 90);
+            AddGridColumn("Name", "Leave Type Name", 220, 160, fill: true);
+            AddGridColumn("Days", "Annual Quota", 130, 110);
+            AddGridColumn("Months", "Min Service", 120, 100);
+            AddGridColumn("Clearance", "Clearance Required", 150, 130);
 
             bool isAdmin = AuthService.Instance.HasRole(SystemRole.Admin);
             if (isAdmin)
@@ -1021,17 +1034,17 @@ namespace ELMS.Forms
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
-            dgvData.Columns.Add("EmpCode", "Emp Code");
-            dgvData.Columns.Add("EmpName", "Employee Name");
-            dgvData.Columns.Add("Dept", "Department");
-            dgvData.Columns.Add("Type", "Leave Type");
-            dgvData.Columns.Add("Base", "Base");
-            dgvData.Columns.Add("Carry", "Carry");
-            dgvData.Columns.Add("Bonus", "Bonus");
-            dgvData.Columns.Add("Allocated", "Total");
-            dgvData.Columns.Add("Used", "Used");
-            dgvData.Columns.Add("Balance", "Balance");
-            dgvData.Columns.Add("Utilization", "Utilization");
+            AddGridColumn("EmpCode", "Emp Code", 100, 90);
+            AddGridColumn("EmpName", "Employee Name", 170, 140);
+            AddGridColumn("Dept", "Department", 160, 130);
+            AddGridColumn("Type", "Leave Type", 150, 120);
+            AddGridColumn("Base", "Base", 75, 60);
+            AddGridColumn("Carry", "Carry", 75, 60);
+            AddGridColumn("Bonus", "Bonus", 75, 60);
+            AddGridColumn("Allocated", "Total", 80, 65);
+            AddGridColumn("Used", "Used", 75, 60);
+            AddGridColumn("Balance", "Balance", 85, 70);
+            AddGridColumn("Utilization", "Utilization", 110, 90, fill: true);
 
             string search = txtSearch.Text.Trim().ToLowerInvariant();
             string typeFilter = cboFilter1.SelectedItem?.ToString() ?? "All Leave Types";
@@ -1141,11 +1154,11 @@ namespace ELMS.Forms
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Role Name", Width = 180 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Key", HeaderText = "Role Key", Width = 180 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Users", HeaderText = "Assigned Users", Width = 140 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Permissions", HeaderText = "Permissions", Width = 150 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", Width = 110 });
+            AddGridColumn("Name", "Role Name", 180, 140);
+            AddGridColumn("Key", "Role Key", 170, 130);
+            AddGridColumn("Users", "Assigned Users", 130, 100);
+            AddGridColumn("Permissions", "Permissions", 260, 180, fill: true);
+            AddGridColumn("Status", "Status", 100, 80);
 
             var actionCol = new DataGridViewButtonColumn
             {
@@ -1214,10 +1227,10 @@ namespace ELMS.Forms
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Code", HeaderText = "Dept Code", Width = 110 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Department Name", Width = 230 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Head", HeaderText = "Department Head", Width = 200 });
-            dgvData.Columns.Add(new DataGridViewTextBoxColumn { Name = "Staff", HeaderText = "Active Personnel", Width = 140 });
+            AddGridColumn("Code", "Dept Code", 110, 90);
+            AddGridColumn("Name", "Department Name", 240, 160, fill: true);
+            AddGridColumn("Head", "Department Head", 200, 150);
+            AddGridColumn("Staff", "Active Personnel", 140, 110);
 
             var actionCol = new DataGridViewButtonColumn
             {
@@ -1311,15 +1324,15 @@ namespace ELMS.Forms
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
-            dgvData.Columns.Add("Code", "Emp Code");
-            dgvData.Columns.Add("Name", "Full Name");
-            dgvData.Columns.Add("Gender", "Gender");
-            dgvData.Columns.Add("Dept", "Department");
-            dgvData.Columns.Add("Title", "Job Title");
-            dgvData.Columns.Add("HireDate", "Hire Date");
-            dgvData.Columns.Add("Tenure", "Tenure");
-            dgvData.Columns.Add("Email", "Email");
-            dgvData.Columns.Add("Status", "Status");
+            AddGridColumn("Code", "Emp Code", 100, 90);
+            AddGridColumn("Name", "Full Name", 170, 140);
+            AddGridColumn("Gender", "Gender", 85, 70);
+            AddGridColumn("Dept", "Department", 180, 140);
+            AddGridColumn("Title", "Job Title", 190, 150);
+            AddGridColumn("HireDate", "Hire Date", 110, 100);
+            AddGridColumn("Tenure", "Tenure", 140, 120);
+            AddGridColumn("Email", "Email", 220, 180, fill: true);
+            AddGridColumn("Status", "Status", 95, 80);
 
             var actionCol = new DataGridViewButtonColumn
             {
@@ -1364,17 +1377,17 @@ namespace ELMS.Forms
             dgvData.Columns.Clear();
             dgvData.Rows.Clear();
 
-            dgvData.Columns.Add("EmpCode", "Emp Code");
-            dgvData.Columns.Add("EmpName", "Employee Name");
-            dgvData.Columns.Add("Dept", "Department");
-            dgvData.Columns.Add("LeaveType", "Leave Type");
-            dgvData.Columns.Add("Base", "Base");
-            dgvData.Columns.Add("Carried", "Carried");
-            dgvData.Columns.Add("Bonus", "Tenure Bonus");
-            dgvData.Columns.Add("Total", "Allocated");
-            dgvData.Columns.Add("Used", "Taken");
-            dgvData.Columns.Add("Balance", "Balance");
-            dgvData.Columns.Add("Rate", "Utilization %");
+            AddGridColumn("EmpCode", "Emp Code", 100, 90);
+            AddGridColumn("EmpName", "Employee Name", 170, 140);
+            AddGridColumn("Dept", "Department", 160, 130);
+            AddGridColumn("LeaveType", "Leave Type", 150, 120);
+            AddGridColumn("Base", "Base", 75, 60);
+            AddGridColumn("Carried", "Carried", 75, 60);
+            AddGridColumn("Bonus", "Tenure Bonus", 110, 90);
+            AddGridColumn("Total", "Allocated", 85, 70);
+            AddGridColumn("Used", "Taken", 75, 60);
+            AddGridColumn("Balance", "Balance", 85, 70);
+            AddGridColumn("Rate", "Utilization %", 110, 90, fill: true);
 
             string search = txtSearch.Text.Trim().ToLowerInvariant();
             string typeFilter = cboFilter1.SelectedItem?.ToString() ?? "All Leave Types";
